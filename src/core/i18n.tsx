@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 export type Locale = 'zh_cn' | 'zh_tw' | 'en';
 
@@ -85,6 +85,16 @@ export interface Translations {
   aceCard: string;
   kingCard: string;
   fiftyLawTitle: string;
+
+  // Game Levels & AI Difficulty
+  difficultyLabel: string;
+  diffNovice: string;
+  diffStandard: string;
+  diffMaster: string;
+  gradeLadderTitle: string;
+  passAGoal: string;
+  champVictory: string;
+  selectGrade: string;
 
   // About Modal
   aboutTitle: string;
@@ -176,6 +186,15 @@ export const TRANSLATIONS: Record<Locale, Translations> = {
     kingCard: 'K',
     fiftyLawTitle: '五十定律顺子监测：',
 
+    difficultyLabel: 'AI段位',
+    diffNovice: '🌱 初级学徒',
+    diffStandard: '⚔️ 进阶高手',
+    diffMaster: '👑 国手大师',
+    gradeLadderTitle: '升级阶梯',
+    passAGoal: '过A决胜局',
+    champVictory: '🏆 恭喜过A成功，斩获总冠军！',
+    selectGrade: '选择起始打几',
+
     aboutTitle: '掼蛋大师教练 · 智能体研发团队',
     aboutInst1Title: '唯爱AI公益基金会 (VI AI for Good) 科技公益发起',
     aboutInst1Desc: '致力于运用先进生成式 AI 与 Agentic 系统推动中华传统益智博弈文化普及，打造零门槛、零成本、高智力体验的智能化学习工具。',
@@ -264,6 +283,15 @@ export const TRANSLATIONS: Record<Locale, Translations> = {
     kingCard: 'K',
     fiftyLawTitle: '五十定律順子監測：',
 
+    difficultyLabel: 'AI段位',
+    diffNovice: '🌱 初級學徒',
+    diffStandard: '⚔️ 進階高手',
+    diffMaster: '👑 國手大師',
+    gradeLadderTitle: '升級階梯',
+    passAGoal: '過A決勝局',
+    champVictory: '🏆 恭喜過A成功，斬獲總冠軍！',
+    selectGrade: '選擇起始打幾',
+
     aboutTitle: '掼蛋大師教練 · 智能體研發團隊',
     aboutInst1Title: '唯愛AI公益基金會 (VI AI for Good) 科技公益發起',
     aboutInst1Desc: '致力於運用先進生成式 AI 與 Agentic 系統推動中華傳統益智博弈文化普及，打造零門檻、零成本、高智力體驗的智能化學習工具。',
@@ -351,6 +379,15 @@ export const TRANSLATIONS: Record<Locale, Translations> = {
     aceCard: 'A',
     kingCard: 'K',
     fiftyLawTitle: '50-Law Straight Monitor:',
+
+    difficultyLabel: 'AI Level',
+    diffNovice: '🌱 Novice',
+    diffStandard: '⚔️ Intermediate',
+    diffMaster: '👑 Grandmaster',
+    gradeLadderTitle: 'Grade Ladder',
+    passAGoal: 'Pass Level A Finale',
+    champVictory: '🏆 Passed Grade A! Grand Champion!',
+    selectGrade: 'Select Starting Grade',
 
     aboutTitle: 'Guandan Pro Coach · AI Research Team',
     aboutInst1Title: 'VI AI for Good Foundation (Tech Philanthropy)',

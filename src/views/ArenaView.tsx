@@ -1,15 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { GameMode, GameState, ReplayRecord } from '../core/types';
-import { initMatch, startRound, playMove, passMove, startSwapHandsMatch, exportReplayRecord } from '../core/engine';
-import { chooseAIAction, getCoachSuggestion } from '../core/ai';
+import { GameMode, GameState, LevelRank, ReplayRecord } from '../core/types';
+import { initMatch, startRound, playMove, passMove, startSwapHandsMatch, exportReplayRecord, LEVEL_SEQUENCE } from '../core/engine';
+import { AIDifficulty, chooseAIAction, getCoachSuggestion } from '../core/ai';
 import { analyzeCardTracker } from '../core/tracker';
 import { classify } from '../core/combos';
+import { useI18n } from '../core/i18n';
 import { PokerTable } from '../components/Board/PokerTable';
 import { CardTrackerDrawer } from '../components/HUD/CardTrackerDrawer';
 import { CoachBubble } from '../components/Coach/CoachBubble';
 import { RoundEndModal } from '../components/Modals/RoundEndModal';
 import { Sound } from '../core/audio';
-import { Play, Pause, RotateCcw, Bot, Eye, RefreshCw, Film, Users } from 'lucide-react';
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  Bot,
+  Eye,
+  RefreshCw,
+  Film,
+  Users,
+  Trophy,
+  ChevronRight,
+  Flame,
+} from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface ArenaViewProps {
@@ -17,7 +30,11 @@ interface ArenaViewProps {
 }
 
 export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
+  const { t } = useI18n();
   const [gameMode, setGameMode] = useState<GameMode>('4p');
+  const [aiDifficulty, setAiDifficulty] = useState<AIDifficulty>('master');
+  const [selectedRank, setSelectedRank] = useState<LevelRank>('2');
+  const [showLevelPicker, setShowLevelPicker] = useState<boolean>(false);
   const [gameState, setGameState] = useState<GameState>(() => initMatch('2', '4p'));
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [botSpeedMs, setBotSpeedMs] = useState<number>(1000);
@@ -25,7 +42,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
   const [notification, setNotification] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<'table' | 'coach' | 'tracker'>('table');
 
-  const { currentTurn, hands, levelRank, phase, history, isGodMode } = gameState;
+  const { currentTurn, hands, levelRank, phase, history, isGodMode, teamLevels } = gameState;
   const userHand = hands[0] || [];
   const isMyTurn = currentTurn === 0;
 
@@ -56,7 +73,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
     if (currentTurn !== 0) {
       const timer = setTimeout(() => {
         const botHand = hands[currentTurn] || [];
-        const aiDecision = chooseAIAction(currentTurn, botHand, gameState, 'standard');
+        const aiDecision = chooseAIAction(currentTurn, botHand, gameState, aiDifficulty);
 
         if (aiDecision.action === 'play' && aiDecision.combo) {
           triggerComboSound(aiDecision.combo.isBomb, aiDecision.combo.bombTier);
@@ -87,15 +104,15 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
 
       return () => clearTimeout(timer);
     }
-  }, [currentTurn, phase, gameState, botSpeedMs, isAutoPlay]);
+  }, [currentTurn, phase, gameState, botSpeedMs, isAutoPlay, aiDifficulty]);
 
   // Round victory confetti & victory sound
   useEffect(() => {
     if (phase === 'round_end' || phase === 'match_end') {
       Sound.playVictory();
       confetti({
-        particleCount: 100,
-        spread: 80,
+        particleCount: 120,
+        spread: 90,
         origin: { y: 0.6 },
       });
     }
@@ -173,9 +190,17 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
   const handleSwitchMode = (mode: GameMode) => {
     Sound.playCardDeal();
     setGameMode(mode);
-    setGameState(initMatch('2', mode));
+    setGameState(initMatch(selectedRank, mode));
     setSelectedIds(new Set());
-    showNotice(`已切换为【${mode === '6p' ? '3副牌·6人团战模式' : '2副牌·4人标准模式'}】！`);
+    showNotice(`已切换为【${mode === '6p' ? t.mode6p : t.mode4p}】！`);
+  };
+
+  const handleSelectStartingRank = (rank: LevelRank) => {
+    setSelectedRank(rank);
+    Sound.playCardDeal();
+    setGameState(initMatch(rank, gameMode));
+    setShowLevelPicker(false);
+    showNotice(`已将起始级牌设为【打 ${rank}】！`);
   };
 
   const handleReviewReplay = () => {
@@ -199,7 +224,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
 
   const handleRestartMatch = () => {
     Sound.playCardDeal();
-    setGameState(initMatch('2', gameMode));
+    setGameState(initMatch(selectedRank, gameMode));
     setSelectedIds(new Set());
   };
 
@@ -214,6 +239,111 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
 
       {/* Main Table Column (Left on Desktop, Full Flex) */}
       <div className="flex-1 h-full min-w-0 flex flex-col gap-1.5 min-h-0 overflow-hidden">
+        {/* Top Grade Progress Ladder & AI Difficulty Bar */}
+        <div className="shrink-0 bg-slate-950/90 border border-slate-800 rounded-xl px-2.5 py-1 flex items-center justify-between shadow-sm">
+          {/* Level Ladder Visuals */}
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            <div className="relative">
+              <button
+                onClick={() => setShowLevelPicker(!showLevelPicker)}
+                className="bg-gradient-to-r from-amber-500/20 to-amber-600/30 hover:from-amber-500/30 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-lg text-[11px] font-black flex items-center gap-1 transition-transform active:scale-95"
+                title={t.selectGrade}
+              >
+                <Trophy className="w-3 h-3 text-amber-400" />
+                <span>打【{levelRank}】</span>
+                <ChevronRight className="w-2.5 h-2.5 opacity-60" />
+              </button>
+
+              {/* Grade Picker Popover */}
+              {showLevelPicker && (
+                <div className="absolute top-8 left-0 w-64 bg-slate-900 border-2 border-amber-500/40 rounded-2xl p-2.5 shadow-2xl z-50 space-y-2 animate-fade-in">
+                  <div className="text-[11px] font-bold text-slate-300 flex items-center justify-between">
+                    <span>{t.selectGrade}</span>
+                    <span className="text-[10px] text-amber-400 font-normal">打2~打A</span>
+                  </div>
+                  <div className="grid grid-cols-7 gap-1">
+                    {LEVEL_SEQUENCE.map((r) => (
+                      <button
+                        key={r}
+                        onClick={() => handleSelectStartingRank(r)}
+                        className={`py-1 rounded-lg text-xs font-black transition-all ${
+                          r === levelRank
+                            ? 'bg-amber-500 text-slate-950 ring-2 ring-amber-300'
+                            : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
+                        }`}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Visual Level Trackers: Team 0 vs Team 1 */}
+            <div className="hidden sm:flex items-center space-x-2 text-[10px] text-slate-300">
+              <div className="flex items-center space-x-1">
+                <span className="text-emerald-400 font-bold">{t.myTeam}:</span>
+                <span className="font-extrabold text-white">{teamLevels[0]}级</span>
+                <div className="w-12 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(100, ((teamLevels[0] - 2) / 12) * 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              <span className="text-slate-600">|</span>
+
+              <div className="flex items-center space-x-1">
+                <span className="text-rose-400 font-bold">{t.oppTeam}:</span>
+                <span className="font-extrabold text-white">{teamLevels[1]}级</span>
+                <div className="w-12 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className="bg-rose-500 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(100, ((teamLevels[1] - 2) / 12) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Difficulty Selector */}
+          <div className="flex items-center space-x-1">
+            <span className="text-[10px] text-slate-400 font-bold hidden md:inline">{t.difficultyLabel}:</span>
+            <button
+              onClick={() => setAiDifficulty('novice')}
+              className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all ${
+                aiDifficulty === 'novice'
+                  ? 'bg-emerald-500 text-slate-950 shadow'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {t.diffNovice}
+            </button>
+            <button
+              onClick={() => setAiDifficulty('standard')}
+              className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all ${
+                aiDifficulty === 'standard'
+                  ? 'bg-amber-500 text-slate-950 shadow'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {t.diffStandard}
+            </button>
+            <button
+              onClick={() => setAiDifficulty('master')}
+              className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all ${
+                aiDifficulty === 'master'
+                  ? 'bg-gradient-to-r from-purple-500 to-amber-500 text-white shadow'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              {t.diffMaster}
+            </button>
+          </div>
+        </div>
+
         {/* Mobile Switcher (Table / Coach / Tracker) */}
         <div className="flex lg:hidden items-center justify-between bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs">
           <button
@@ -222,7 +352,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
               mobileTab === 'table' ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
             }`}
           >
-            牌桌对局
+            {t.tabArena}
           </button>
           <button
             onClick={() => setMobileTab('coach')}
@@ -275,7 +405,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
           </div>
         )}
 
-        {/* Slim Bottom Toolbar (Mode Selector, Speed, Swap Hands, Replay, Restart) */}
+        {/* Slim Bottom Toolbar */}
         <div className="shrink-0 h-8 bg-slate-950/90 border border-slate-800/90 rounded-xl px-2 sm:px-3 flex items-center justify-between text-[11px] shadow-sm">
           {/* Mode Switcher: 4p vs 6p */}
           <div className="flex items-center space-x-1 sm:space-x-1.5">
@@ -338,7 +468,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
               title="与对手互换手牌重打本局"
             >
               <RefreshCw className="w-3 h-3" />
-              <span className="hidden sm:inline">换牌复赛</span>
+              <span className="hidden sm:inline">{t.swapRematch}</span>
             </button>
 
             {onNavigateToReplay && (
@@ -348,7 +478,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
                 title="复盘本局所有出牌"
               >
                 <Film className="w-3 h-3" />
-                <span>复盘</span>
+                <span>{t.replayBtn}</span>
               </button>
             )}
 
@@ -361,7 +491,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
               }`}
             >
               {isAutoPlay ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-              <span>{isAutoPlay ? '暂停' : 'AI托管'}</span>
+              <span>{isAutoPlay ? t.autoPlayOn : t.autoPlayOff}</span>
             </button>
 
             <button
@@ -369,7 +499,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
               className="text-slate-400 hover:text-white flex items-center space-x-1 font-bold text-[11px]"
             >
               <RotateCcw className="w-3 h-3" />
-              <span>重开</span>
+              <span>{t.restartMatch}</span>
             </button>
           </div>
         </div>

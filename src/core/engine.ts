@@ -20,16 +20,24 @@ export function getTeamOf(seat: PlayerSeat, mode: GameMode = '4p'): Team {
   return seat === 0 || seat === 2 ? 0 : 1;
 }
 
-export function initMatch(startingRank: LevelRank = '2', mode: GameMode = '4p'): GameState {
+export function initMatch(
+  startingRank: LevelRank = '2',
+  mode: GameMode = '4p',
+  customLevels?: [number, number]
+): GameState {
   const initialLevel = rankToLevel(startingRank);
+  const teamLevels: [number, number] = customLevels || [initialLevel, initialLevel];
+  const activeLevel = Math.max(teamLevels[0], teamLevels[1]);
+  const activeRank = levelToRank(activeLevel);
+
   const playerCount = mode === '6p' ? 6 : 4;
   const initialTrickPlays: Record<number, TrickPlay | null> = {};
   for (let i = 0; i < playerCount; i++) initialTrickPlays[i] = null;
 
   return startRound({
     mode,
-    levelRank: startingRank,
-    teamLevels: [initialLevel, initialLevel],
+    levelRank: activeRank,
+    teamLevels,
     hands: Array.from({ length: playerCount }, () => []),
     initialHands: Array.from({ length: playerCount }, () => []),
     currentTurn: 0,
