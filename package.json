@@ -1,7 +1,37 @@
 {
   "name": "guandan-app",
-  "private": true,
-  "version": "1.0.0",
+  "version": "1.2.0",
+  "description": "掼蛋大师教练 (Guandan Pro Coach) - Professional AI Agentic Mind Sports Platform with 50-Law Tracker, Game Levels, 6-Player Mode & WebRTC Multiplayer.",
+  "homepage": "https://guandan.weiai.ai",
+  "license": "MIT",
+  "author": {
+    "name": "VI AI for Good Foundation (唯爱AI公益基金会)",
+    "url": "https://weiai.ai"
+  },
+  "contributors": [
+    "Zhejiang University AI Agent Research Lab (浙大智能体)",
+    "North America Chinese University Alumni Guandan Club (北美高校联盟 掼蛋俱乐部)",
+    "Michael HUO"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/viaiforgood/guandan-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/viaiforgood/guandan-app/issues"
+  },
+  "keywords": [
+    "guandan",
+    "poker",
+    "ai-agent",
+    "card-games",
+    "fifty-law",
+    "webrtc",
+    "react",
+    "typescript",
+    "tailwindcss",
+    "viaiforgood"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
