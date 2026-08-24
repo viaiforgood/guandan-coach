@@ -8,6 +8,7 @@ import { AcademyView } from './views/AcademyView';
 import { TrackerDrillView } from './views/TrackerDrillView';
 import { HandOCRView } from './views/HandOCRView';
 import { BaodianView } from './views/BaodianView';
+import { BgmPlayer } from './components/Audio/BgmPlayer';
 import { BrandLogo } from './components/Logo/BrandLogo';
 import { ReplayRecord } from './core/types';
 import {
@@ -171,8 +172,11 @@ const AppContent: React.FC = () => {
             </button>
           </nav>
 
-          {/* Right Controls: i18n Language Switcher & Alliance Background Modal */}
+          {/* Right Controls: BgmPlayer, i18n Language Switcher & Alliance Background Modal */}
           <div className="flex items-center space-x-1.5 sm:space-x-2">
+            {/* Suno BGM Player */}
+            <BgmPlayer />
+
             {/* Language Selector */}
             <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5 text-[10px] font-bold">
               <button
