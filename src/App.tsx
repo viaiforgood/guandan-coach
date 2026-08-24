@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { I18nProvider, useI18n, Locale } from './core/i18n';
+import { I18nProvider, useI18n } from './core/i18n';
 import { ArenaView } from './views/ArenaView';
 import { ReplayView } from './views/ReplayView';
 import { OnlineView } from './views/OnlineView';
@@ -7,6 +7,7 @@ import { PuzzleView } from './views/PuzzleView';
 import { AcademyView } from './views/AcademyView';
 import { TrackerDrillView } from './views/TrackerDrillView';
 import { HandOCRView } from './views/HandOCRView';
+import { BaodianView } from './views/BaodianView';
 import { BrandLogo } from './components/Logo/BrandLogo';
 import { ReplayRecord } from './core/types';
 import {
@@ -21,10 +22,11 @@ import {
   X,
   ShieldCheck,
   GraduationCap,
-  Languages,
+  Sparkles,
+  Scroll,
 } from 'lucide-react';
 
-type TabType = 'arena' | 'replay' | 'online' | 'puzzles' | 'drills' | 'academy' | 'ocr';
+type TabType = 'arena' | 'replay' | 'online' | 'puzzles' | 'drills' | 'baodian' | 'academy' | 'ocr';
 
 const AppContent: React.FC = () => {
   const { locale, setLocale, t } = useI18n();
@@ -74,7 +76,7 @@ const AppContent: React.FC = () => {
           <nav className="hidden md:flex items-center space-x-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
             <button
               onClick={() => setCurrentTab('arena')}
-              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all ${
+              className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-extrabold transition-all ${
                 currentTab === 'arena'
                   ? 'bg-amber-500 text-slate-950 shadow-sm'
                   : 'text-slate-300 hover:text-white'
@@ -86,7 +88,7 @@ const AppContent: React.FC = () => {
 
             <button
               onClick={() => setCurrentTab('replay')}
-              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all ${
+              className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-extrabold transition-all ${
                 currentTab === 'replay'
                   ? 'bg-sky-500 text-slate-950 shadow-sm'
                   : 'text-slate-300 hover:text-white'
@@ -98,7 +100,7 @@ const AppContent: React.FC = () => {
 
             <button
               onClick={() => setCurrentTab('online')}
-              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all ${
+              className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-extrabold transition-all ${
                 currentTab === 'online'
                   ? 'bg-emerald-500 text-slate-950 shadow-sm'
                   : 'text-slate-300 hover:text-white'
@@ -109,8 +111,20 @@ const AppContent: React.FC = () => {
             </button>
 
             <button
+              onClick={() => setCurrentTab('baodian')}
+              className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-extrabold transition-all ${
+                currentTab === 'baodian'
+                  ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-slate-950 shadow-sm'
+                  : 'text-amber-300 hover:text-white'
+              }`}
+            >
+              <Scroll className="w-3.5 h-3.5 text-amber-400" />
+              <span>{t.tabBaodian}</span>
+            </button>
+
+            <button
               onClick={() => setCurrentTab('puzzles')}
-              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all ${
+              className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-extrabold transition-all ${
                 currentTab === 'puzzles'
                   ? 'bg-amber-500 text-slate-950 shadow-sm'
                   : 'text-slate-300 hover:text-white'
@@ -122,7 +136,7 @@ const AppContent: React.FC = () => {
 
             <button
               onClick={() => setCurrentTab('drills')}
-              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all ${
+              className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-extrabold transition-all ${
                 currentTab === 'drills'
                   ? 'bg-amber-500 text-slate-950 shadow-sm'
                   : 'text-slate-300 hover:text-white'
@@ -134,7 +148,7 @@ const AppContent: React.FC = () => {
 
             <button
               onClick={() => setCurrentTab('academy')}
-              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all ${
+              className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-extrabold transition-all ${
                 currentTab === 'academy'
                   ? 'bg-emerald-500 text-slate-950 shadow-sm'
                   : 'text-slate-300 hover:text-white'
@@ -146,7 +160,7 @@ const AppContent: React.FC = () => {
 
             <button
               onClick={() => setCurrentTab('ocr')}
-              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all ${
+              className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-extrabold transition-all ${
                 currentTab === 'ocr'
                   ? 'bg-amber-500 text-slate-950 shadow-sm'
                   : 'text-slate-300 hover:text-white'
@@ -212,6 +226,7 @@ const AppContent: React.FC = () => {
           />
         )}
         {currentTab === 'online' && <OnlineView />}
+        {currentTab === 'baodian' && <BaodianView />}
         {currentTab === 'puzzles' && <PuzzleView />}
         {currentTab === 'drills' && <TrackerDrillView />}
         {currentTab === 'academy' && <AcademyView />}
@@ -228,6 +243,15 @@ const AppContent: React.FC = () => {
         >
           <Swords className="w-3.5 h-3.5 mb-0.5" />
           <span>{t.tabArena}</span>
+        </button>
+        <button
+          onClick={() => setCurrentTab('baodian')}
+          className={`flex flex-col items-center p-1 text-[9px] font-bold ${
+            currentTab === 'baodian' ? 'text-amber-300 font-extrabold' : 'text-slate-400'
+          }`}
+        >
+          <Scroll className="w-3.5 h-3.5 mb-0.5" />
+          <span>宝典</span>
         </button>
         <button
           onClick={() => setCurrentTab('replay')}

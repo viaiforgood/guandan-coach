@@ -20,6 +20,7 @@ export interface Translations {
   tabDrills: string;
   tabAcademy: string;
   tabOcr: string;
+  tabBaodian: string;
   aboutBtn: string;
 
   // Table & Arena
@@ -125,6 +126,7 @@ export const TRANSLATIONS: Record<Locale, Translations> = {
     tabDrills: '五十定律',
     tabAcademy: '新手学院',
     tabOcr: '手牌诊断',
+    tabBaodian: '掼蛋宝典',
     aboutBtn: '联盟背景',
 
     levelLabel: '打',
@@ -222,6 +224,7 @@ export const TRANSLATIONS: Record<Locale, Translations> = {
     tabDrills: '五十定律',
     tabAcademy: '新手學院',
     tabOcr: '手牌診斷',
+    tabBaodian: '掼蛋寶典',
     aboutBtn: '聯盟背景',
 
     levelLabel: '打',
@@ -319,6 +322,7 @@ export const TRANSLATIONS: Record<Locale, Translations> = {
     tabDrills: '50-Law Drills',
     tabAcademy: 'Academy',
     tabOcr: 'Hand Diagnosis',
+    tabBaodian: 'Strategy Vault',
     aboutBtn: 'About Alliance',
 
     levelLabel: 'Grade',
