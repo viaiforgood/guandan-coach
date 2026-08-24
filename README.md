@@ -69,8 +69,20 @@ npm test
 npm run build
 ```
 
+### 7. 🌐 多语言国际化 (i18n) 与 6人3v3团战模式
+- **三语支持**：简体中文 (zh_cn)、繁體中文 (zh_tw)、English (en)。
+- **3副牌 6人团战**：支持 162 张牌 3v3 团队对抗，至尊 6 王天王炸与升级大满贯。
+
+---
+
+## 🏛️ 研发与支持团队
+- **公益发起**：**VI AI for Good**（唯爱AI公益基金会）
+- **算法支持**：**浙大智能体**（Zhejiang University AI Agent Lab）
+- **赛事标准**：**北美高校联盟 掼蛋俱乐部**（NAACU Guandan Club）
+- **课程架构**：**Michael HUO**
+
 ---
 
 ## 📄 开源与致谢
-- 本项目由 **viaiforgood** 维护开发。
+- 本项目由 **VI AI for Good** 维护开发。
 - 牌理知识体系源自中国掼蛋实战与经典兵法博弈理论。
