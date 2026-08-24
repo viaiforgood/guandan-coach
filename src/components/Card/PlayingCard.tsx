@@ -27,7 +27,6 @@ export const PlayingCard: React.FC<PlayingCardProps> = ({
   const isRed = isRedSuit(card.suit) || card.rank === 'BJ';
   const wildcard = levelRank ? isWildcard(card, levelRank) : false;
   const isJoker = card.rank === 'SJ' || card.rank === 'BJ';
-  const isCourt = card.rank === 'J' || card.rank === 'Q' || card.rank === 'K';
 
   // Size dimensions
   const sizeClasses = {
@@ -69,17 +68,22 @@ export const PlayingCard: React.FC<PlayingCardProps> = ({
         </span>
       </div>
 
-      {/* Center Court Graphic / Watermark */}
+      {/* Center Brand Logo Watermark */}
       {!compact && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-15">
           {isJoker ? (
             <span className="text-2xl sm:text-3xl">👑</span>
-          ) : isCourt ? (
-            <span className="text-xl sm:text-2xl font-serif text-amber-900 opacity-30">
-              {card.rank === 'K' ? '♔' : card.rank === 'Q' ? '♕' : '♘'}
-            </span>
+          ) : wildcard ? (
+            <span className="text-2xl sm:text-3xl text-rose-500">♥★</span>
           ) : (
-            <span className="text-xl sm:text-2xl">{SUIT_SYMBOLS[card.suit]}</span>
+            <svg viewBox="0 0 100 100" fill="none" className="w-6 h-6 sm:w-8 sm:h-8">
+              {/* Brand Geometric 'V' + Ace Emblem */}
+              <path
+                d="M36 28 L50 66 L64 28 L56 28 L50 48 L44 28 Z"
+                fill={isRed ? '#EF4444' : '#1E293B'}
+              />
+              <circle cx="50" cy="22" r="3.5" fill={isRed ? '#F59E0B' : '#0284C7'} />
+            </svg>
           )}
         </div>
       )}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { GameState, PlayerSeat } from '../../core/types';
 import { PlayingCard } from '../Card/PlayingCard';
+import { CardBack } from '../Card/CardBack';
 import { describeCombo } from '../../core/combos';
 import { choosePlan } from '../../core/optimizer';
 import { Sound } from '../../core/audio';
@@ -158,13 +159,19 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           )}
         </div>
 
-        {/* God Mode: Show Face-up Cards */}
-        {isGodMode && handLen > 0 && (
-          <div className="mt-0.5 flex -space-x-5 max-w-[130px] sm:max-w-[150px] overflow-x-auto p-0.5 bg-black/40 rounded border border-amber-500/30">
-            {hands[seat].map((card) => (
-              <PlayingCard key={card.id} card={card} levelRank={levelRank} size="sm" compact />
-            ))}
-          </div>
+        {/* Hand Display: God Mode (Face-up) vs Normal Mode (CardBack with Brand Logo) */}
+        {handLen > 0 && (
+          isGodMode ? (
+            <div className="mt-0.5 flex -space-x-5 max-w-[130px] sm:max-w-[150px] overflow-x-auto p-0.5 bg-black/40 rounded border border-amber-500/30">
+              {hands[seat].map((card) => (
+                <PlayingCard key={card.id} card={card} levelRank={levelRank} size="sm" compact />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-0.5 flex items-center justify-center">
+              <CardBack size="sm" />
+            </div>
+          )
         )}
 
         {/* Trick Play Slot */}
