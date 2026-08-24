@@ -10,6 +10,7 @@ import { CardTrackerDrawer } from '../components/HUD/CardTrackerDrawer';
 import { CoachBubble } from '../components/Coach/CoachBubble';
 import { RoundEndModal } from '../components/Modals/RoundEndModal';
 import { Sound } from '../core/audio';
+import { loadUserProfile, saveUserProfile } from '../core/profile';
 import {
   Play,
   Pause,
@@ -106,7 +107,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
     }
   }, [currentTurn, phase, gameState, botSpeedMs, isAutoPlay, aiDifficulty]);
 
-  // Round victory confetti & victory sound
+  // Round victory confetti & victory sound & EXP award
   useEffect(() => {
     if (phase === 'round_end' || phase === 'match_end') {
       Sound.playVictory();
@@ -115,6 +116,19 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
         spread: 90,
         origin: { y: 0.6 },
       });
+
+      try {
+        const profile = loadUserProfile();
+        profile.stats.totalGames += 1;
+        profile.stats.wins += 1;
+        if (gameState.finishedOrder && gameState.finishedOrder[0] === 0) {
+          profile.stats.topRankCount += 1;
+        }
+        profile.exp += 100; // Award 100 EXP
+        saveUserProfile(profile);
+      } catch (e) {
+        console.warn('Profile exp update error:', e);
+      }
     }
   }, [phase]);
 

@@ -10,6 +10,8 @@ import { HandOCRView } from './views/HandOCRView';
 import { BaodianView } from './views/BaodianView';
 import { BgmPlayer } from './components/Audio/BgmPlayer';
 import { BrandLogo } from './components/Logo/BrandLogo';
+import { PlayerProfileModal } from './components/Profile/PlayerProfileModal';
+import { UserProfile, loadUserProfile, getExpProgress } from './core/profile';
 import { ReplayRecord } from './core/types';
 import {
   Swords,
@@ -34,6 +36,10 @@ const AppContent: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<TabType>('arena');
   const [activeReplayRecord, setActiveReplayRecord] = useState<ReplayRecord | null>(null);
   const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
+  const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => loadUserProfile());
+
+  const expProgress = getExpProgress(userProfile.exp);
 
   const handleNavigateToReplay = (record: ReplayRecord) => {
     setActiveReplayRecord(record);
@@ -172,8 +178,28 @@ const AppContent: React.FC = () => {
             </button>
           </nav>
 
-          {/* Right Controls: BgmPlayer, i18n Language Switcher & Alliance Background Modal */}
+          {/* Right Controls: Player Profile, BgmPlayer, i18n Language Switcher & About Modal */}
           <div className="flex items-center space-x-1.5 sm:space-x-2">
+            {/* Player Profile & EXP Badge */}
+            <button
+              onClick={() => setShowProfileModal(true)}
+              className="flex items-center space-x-1.5 bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-amber-500/40 rounded-xl px-2 py-0.5 shadow-sm transition-all text-xs"
+              title="个人中心与战绩段位"
+            >
+              <span className="text-sm">{expProgress.tier.icon}</span>
+              <div className="hidden sm:flex flex-col items-start leading-none text-[10px]">
+                <span className="font-black text-amber-300">
+                  Lv.{userProfile.level} {expProgress.tier.name}
+                </span>
+                <div className="w-14 h-1 bg-slate-800 rounded-full overflow-hidden mt-0.5">
+                  <div
+                    className="h-full bg-amber-400 rounded-full"
+                    style={{ width: `${expProgress.percent}%` }}
+                  ></div>
+                </div>
+              </div>
+            </button>
+
             {/* Suno BGM Player */}
             <BgmPlayer />
 
@@ -379,6 +405,15 @@ const AppContent: React.FC = () => {
             </button>
           </div>
         </div>
+      )}
+
+      {/* User Profile & EXP Modal */}
+      {showProfileModal && (
+        <PlayerProfileModal
+          profile={userProfile}
+          onUpdateProfile={setUserProfile}
+          onClose={() => setShowProfileModal(false)}
+        />
       )}
     </div>
   );
