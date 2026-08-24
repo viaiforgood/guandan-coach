@@ -15,6 +15,7 @@ import {
   Repeat,
   Shuffle,
   RefreshCw,
+  Search,
 } from 'lucide-react';
 
 export const BgmPlayer: React.FC = () => {
@@ -22,6 +23,7 @@ export const BgmPlayer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [volume, setVolume] = useState<number>(() => {
     const saved = localStorage.getItem('guandan_bgm_volume');
     return saved !== null ? parseFloat(saved) : 0.35;
@@ -145,9 +147,14 @@ export const BgmPlayer: React.FC = () => {
     { id: 'worship_lyric', label: '诗意抒情' },
   ];
 
-  const filteredPlaylist = playlist.filter(
-    (t) => selectedCategory === 'all' || t.category === selectedCategory
-  );
+  const filteredPlaylist = playlist.filter((t) => {
+    const matchCat = selectedCategory === 'all' || t.category === selectedCategory;
+    const matchQuery =
+      !searchQuery ||
+      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.tags && t.tags.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchCat && matchQuery;
+  });
 
   return (
     <div className="relative flex items-center">
@@ -219,14 +226,14 @@ export const BgmPlayer: React.FC = () => {
 
       {/* Expandable Audio Control Drawer / Modal */}
       {showDrawer && (
-        <div className="absolute right-0 top-11 z-50 w-72 sm:w-84 bg-slate-900/95 backdrop-blur-xl border border-amber-500/40 rounded-2xl shadow-2xl p-3.5 space-y-3 animate-fade-in text-slate-100 text-left">
+        <div className="absolute right-0 top-11 z-50 w-72 sm:w-88 bg-slate-900/95 backdrop-blur-xl border border-amber-500/40 rounded-2xl shadow-2xl p-3.5 space-y-3 animate-fade-in text-slate-100 text-left">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-800 pb-2">
             <div className="flex items-center space-x-1.5">
               <Sparkles className="w-4 h-4 text-amber-400" />
               <div>
-                <h4 className="text-xs font-black text-white">Suno 掼蛋专属背景音乐</h4>
-                <p className="text-[10px] text-slate-400">Michael Living AI 原创国风与战歌</p>
+                <h4 className="text-xs font-black text-white">Suno 掼蛋专属背景音乐 ({playlist.length} 首)</h4>
+                <p className="text-[10px] text-slate-400">Michael Living AI 原创国风与战歌全集</p>
               </div>
             </div>
 
@@ -347,6 +354,18 @@ export const BgmPlayer: React.FC = () => {
             </div>
           </div>
 
+          {/* Search Bar in Drawer */}
+          <div className="relative">
+            <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="搜索 145 首曲目（如：满江红、加州、向山、如梦令）..."
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-7 pr-2.5 py-1 text-[11px] text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
           {/* Category Filter Pills */}
           <div className="flex items-center space-x-1 overflow-x-auto pb-0.5">
             {categories.map((c) => (
@@ -371,7 +390,7 @@ export const BgmPlayer: React.FC = () => {
               <span className="text-[9px] text-amber-400/80">点击即播</span>
             </div>
 
-            <div className="max-h-44 overflow-y-auto space-y-1 pr-1">
+            <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
               {filteredPlaylist.map((track, idx) => {
                 const isSelected = playlist[currentTrackIndex]?.id === track.id;
                 return (
@@ -391,7 +410,7 @@ export const BgmPlayer: React.FC = () => {
                     }`}
                   >
                     <div className="flex items-center space-x-2 truncate">
-                      <span className="text-[10px] font-mono text-slate-500 w-4">
+                      <span className="text-[10px] font-mono text-slate-500 w-5 text-right shrink-0">
                         {idx + 1}
                       </span>
                       <span className="text-xs truncate">{track.title}</span>
