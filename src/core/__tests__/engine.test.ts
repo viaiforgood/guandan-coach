@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { createDeck, dealHands, isWildcard, rankValue, sortHand } from '../cards';
+import { createDeck, dealHands, isWildcard, rankValue } from '../cards';
 import { classify, compare } from '../combos';
 import { choosePlan } from '../optimizer';
 import { analyzeCardTracker } from '../tracker';
-import { initMatch, playMove, passMove, calculateRoundScore } from '../engine';
-import { Card } from '../types';
+import { initMatch, playMove, passMove, calculateRoundScore, startSwapHandsMatch, exportReplayRecord, importReplayRecord } from '../engine';
+import { getReplayStep } from '../replay';
+import { Card, ReplayRecord } from '../types';
 
 describe('Cards & Deck', () => {
   it('creates 108 cards with 4 jokers', () => {
@@ -121,7 +122,6 @@ describe('Combos Classification', () => {
     expect(cJoker.isBomb).toBe(true);
     expect(cJoker.bombTier).toBe(12);
 
-    // SF beats 4-bomb and 5-bomb, but loses to 6-bomb and Joker bomb
     expect(compare(cBomb4, cSf)).toBeLessThan(0); // cSf > cBomb4
     expect(compare(cSf, cJoker)).toBeLessThan(0); // cJoker > cSf
   });
@@ -177,5 +177,57 @@ describe('Engine Match Progression & Scoring', () => {
     expect(error).toBeUndefined();
     expect(nextState.hands[0].length).toBe(26);
     expect(nextState.currentTurn).toBe(1);
+  });
+
+  it('swaps hands between teams for Rematch Mode (复赛模式)', () => {
+    const state = initMatch('2');
+    const hand0 = [...state.hands[0]];
+    const hand1 = [...state.hands[1]];
+
+    const swapped = startSwapHandsMatch(state);
+    expect(swapped.hands[0].length).toBe(hand1.length);
+    expect(swapped.hands[1].length).toBe(hand0.length);
+    // User hand IDs match opponent's original hand IDs
+    expect(swapped.hands[0].map((c) => c.id).sort()).toEqual(hand1.map((c) => c.id).sort());
+  });
+
+  it('exports and imports replay records correctly', () => {
+    const state = initMatch('2');
+    const jsonStr = exportReplayRecord(state, '测试牌谱');
+    const imported = importReplayRecord(jsonStr);
+
+    expect(imported.levelRank).toBe('2');
+    expect(imported.initialHands.length).toBe(4);
+    expect(imported.title).toBe('测试牌谱');
+  });
+
+  it('reconstructs replay steps with getReplayStep', () => {
+    const sampleRecord: ReplayRecord = {
+      version: '1.0',
+      timestamp: Date.now(),
+      levelRank: '2',
+      teamLevels: [2, 2],
+      initialHands: [
+        [{ id: '1', suit: 'S', rank: '3' }],
+        [{ id: '2', suit: 'H', rank: '3' }],
+        [{ id: '3', suit: 'C', rank: '3' }],
+        [{ id: '4', suit: 'D', rank: '3' }],
+      ],
+      history: [
+        {
+          seat: 0,
+          action: 'play',
+          combo: { category: 'single', length: 1, compareValue: 3, isBomb: false, cards: [{ id: '1', suit: 'S', rank: '3' }] },
+        },
+      ],
+      finishedOrder: [0, 1, 2, 3],
+    };
+
+    const step0 = getReplayStep(sampleRecord, 0);
+    expect(step0.hands[0].length).toBe(1);
+
+    const step1 = getReplayStep(sampleRecord, 1);
+    expect(step1.hands[0].length).toBe(0);
+    expect(step1.actionTaken?.action).toBe('play');
   });
 });

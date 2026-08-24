@@ -1,4 +1,4 @@
-import { Card, Combo, GameHistoryEntry, GameState, LevelRank, PlayerSeat, Team, TrickPlay } from './types';
+import { Card, Combo, GameHistoryEntry, GameState, LevelRank, PlayerSeat, ReplayRecord, Team, TrickPlay } from './types';
 import { createDeck, dealHands, shuffleDeck, sortHand } from './cards';
 import { compare } from './combos';
 
@@ -23,6 +23,7 @@ export function initMatch(startingRank: LevelRank = '2'): GameState {
     levelRank: startingRank,
     teamLevels: [initialLevel, initialLevel],
     hands: [[], [], [], []],
+    initialHands: [[], [], [], []],
     currentTurn: 0,
     lastPlayerIndex: null,
     currentCombo: null,
@@ -31,6 +32,7 @@ export function initMatch(startingRank: LevelRank = '2'): GameState {
     finishedOrder: [],
     phase: 'playing',
     firstLeadSeat: 0,
+    isGodMode: false,
   });
 }
 
@@ -46,6 +48,12 @@ export function startRound(prevState: GameState): GameState {
   return {
     ...prevState,
     hands: sortedHands,
+    initialHands: [
+      [...sortedHands[0]],
+      [...sortedHands[1]],
+      [...sortedHands[2]],
+      [...sortedHands[3]],
+    ],
     currentTurn: firstLead,
     lastPlayerIndex: null,
     currentCombo: null,
@@ -54,6 +62,45 @@ export function startRound(prevState: GameState): GameState {
     finishedOrder: [],
     phase: 'playing',
     firstLeadSeat: firstLead,
+    isGodMode: prevState.isGodMode || false,
+  };
+}
+
+/**
+ * Swap Hands Rematch (复赛模式 · 换牌挑战)
+ * Swaps cards between Team 0 (South/North) and Team 1 (East/West):
+ * - User (Seat 0) gets Opponent (Seat 1) hand
+ * - Teammate (Seat 2) gets Opponent (Seat 3) hand
+ * - Opponents get User & Teammate hands
+ */
+export function startSwapHandsMatch(prevState: GameState): GameState {
+  const { initialHands, levelRank } = prevState;
+
+  // Swap: 0 <-> 1, 2 <-> 3
+  const swappedHands: [Card[], Card[], Card[], Card[]] = [
+    sortHand([...initialHands[1]], levelRank, true),
+    sortHand([...initialHands[0]], levelRank, true),
+    sortHand([...initialHands[3]], levelRank, true),
+    sortHand([...initialHands[2]], levelRank, true),
+  ];
+
+  return {
+    ...prevState,
+    hands: swappedHands,
+    initialHands: [
+      [...swappedHands[0]],
+      [...swappedHands[1]],
+      [...swappedHands[2]],
+      [...swappedHands[3]],
+    ],
+    currentTurn: 0,
+    lastPlayerIndex: null,
+    currentCombo: null,
+    history: [],
+    trickPlays: { 0: null, 1: null, 2: null, 3: null },
+    finishedOrder: [],
+    phase: 'playing',
+    firstLeadSeat: 0,
   };
 }
 
@@ -113,6 +160,12 @@ export function playMove(
     combo,
     cards: combo.cards,
     timestamp: Date.now(),
+    handsAfter: [
+      [...newHands[0]],
+      [...newHands[1]],
+      [...newHands[2]],
+      [...newHands[3]],
+    ],
   };
 
   // Check if round is over (3 players have finished)
@@ -170,6 +223,12 @@ export function passMove(
     seat,
     action: 'pass',
     timestamp: Date.now(),
+    handsAfter: [
+      [...state.hands[0]],
+      [...state.hands[1]],
+      [...state.hands[2]],
+      [...state.hands[3]],
+    ],
   };
 
   const nextSeat = nextActiveSeat(seat, state.hands);
@@ -260,4 +319,32 @@ function finalizeRound(state: GameState): GameState {
     levelRank: nextRank,
     phase: nextLevel > 14 ? 'match_end' : 'round_end',
   };
+}
+
+/**
+ * Export replay record to JSON string
+ */
+export function exportReplayRecord(state: GameState, title?: string): string {
+  const record: ReplayRecord = {
+    version: '1.0',
+    timestamp: Date.now(),
+    levelRank: state.levelRank,
+    teamLevels: state.teamLevels,
+    initialHands: state.initialHands,
+    history: state.history,
+    finishedOrder: state.finishedOrder,
+    title: title || `掼蛋对战牌谱 (打${state.levelRank})`,
+  };
+  return JSON.stringify(record, null, 2);
+}
+
+/**
+ * Import replay record from JSON string
+ */
+export function importReplayRecord(jsonStr: string): ReplayRecord {
+  const record = JSON.parse(jsonStr) as ReplayRecord;
+  if (!record.initialHands || !record.history || !record.levelRank) {
+    throw new Error('无效的掼蛋牌谱文件格式');
+  }
+  return record;
 }

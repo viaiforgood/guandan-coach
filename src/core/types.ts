@@ -65,6 +65,7 @@ export interface GameHistoryEntry {
   combo?: Combo;
   cards?: Card[];
   timestamp?: number;
+  handsAfter?: [Card[], Card[], Card[], Card[]];
 }
 
 export interface TributeInfo {
@@ -88,6 +89,7 @@ export interface GameState {
   levelRank: LevelRank;
   teamLevels: [number, number]; // Index 0: Team 0, Index 1: Team 1 (2..14 mapping to 2..A)
   hands: [Card[], Card[], Card[], Card[]];
+  initialHands: [Card[], Card[], Card[], Card[]];
   currentTurn: PlayerSeat;
   lastPlayerIndex: PlayerSeat | null;
   currentCombo: Combo | null;
@@ -97,6 +99,19 @@ export interface GameState {
   phase: GamePhase;
   tributeInfo?: TributeInfo;
   firstLeadSeat: PlayerSeat;
+  isGodMode?: boolean; // 上帝模式 / 明牌模式
+}
+
+export interface ReplayRecord {
+  version: string;
+  timestamp: number;
+  levelRank: LevelRank;
+  teamLevels: [number, number];
+  initialHands: [Card[], Card[], Card[], Card[]];
+  history: GameHistoryEntry[];
+  finishedOrder: PlayerSeat[];
+  title?: string;
+  notes?: string;
 }
 
 export interface CoachSuggestion {
@@ -130,4 +145,11 @@ export interface PuzzleScenario {
   };
   explanation: string;
   principleCitation: string;
+}
+
+export interface PlayerEmoji {
+  seat: PlayerSeat;
+  emoji: string;
+  text?: string;
+  id: string;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { GameState } from '../core/types';
-import { initMatch, startRound, playMove, passMove } from '../core/engine';
+import { GameState, ReplayRecord } from '../core/types';
+import { initMatch, startRound, playMove, passMove, startSwapHandsMatch, exportReplayRecord } from '../core/engine';
 import { chooseAIAction, getCoachSuggestion } from '../core/ai';
 import { analyzeCardTracker } from '../core/tracker';
 import { classify } from '../core/combos';
@@ -9,10 +9,14 @@ import { CardTrackerDrawer } from '../components/HUD/CardTrackerDrawer';
 import { CoachBubble } from '../components/Coach/CoachBubble';
 import { RoundEndModal } from '../components/Modals/RoundEndModal';
 import { Sound } from '../core/audio';
-import { Play, Pause, RotateCcw, Bot, Eye } from 'lucide-react';
+import { Play, Pause, RotateCcw, Bot, Eye, RefreshCw, Film } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-export const ArenaView: React.FC = () => {
+interface ArenaViewProps {
+  onNavigateToReplay?: (record: ReplayRecord) => void;
+}
+
+export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
   const [gameState, setGameState] = useState<GameState>(() => initMatch('2'));
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [botSpeedMs, setBotSpeedMs] = useState<number>(1000);
@@ -20,7 +24,7 @@ export const ArenaView: React.FC = () => {
   const [notification, setNotification] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<'table' | 'coach' | 'tracker'>('table');
 
-  const { currentTurn, hands, levelRank, phase, history } = gameState;
+  const { currentTurn, hands, levelRank, phase, history, isGodMode } = gameState;
   const userHand = hands[0];
   const isMyTurn = currentTurn === 0;
 
@@ -154,6 +158,30 @@ export const ArenaView: React.FC = () => {
     }
   };
 
+  const handleToggleGodMode = () => {
+    setGameState((prev) => ({
+      ...prev,
+      isGodMode: !prev.isGodMode,
+    }));
+    showNotice(isGodMode ? '已关闭上帝模式' : '已开启上帝模式（透视全场手牌）！');
+  };
+
+  const handleSwapHandsRematch = () => {
+    Sound.playCardDeal();
+    const swapped = startSwapHandsMatch(gameState);
+    setGameState(swapped);
+    setSelectedIds(new Set());
+    showNotice('🔄 换位复赛开启！你已拿到对手上一局的手牌，请逆风翻盘！');
+  };
+
+  const handleReviewReplay = () => {
+    const jsonStr = exportReplayRecord(gameState);
+    const record = JSON.parse(jsonStr) as ReplayRecord;
+    if (onNavigateToReplay) {
+      onNavigateToReplay(record);
+    }
+  };
+
   const showNotice = (msg: string) => {
     setNotification(msg);
     setTimeout(() => setNotification(null), 3000);
@@ -222,6 +250,7 @@ export const ArenaView: React.FC = () => {
             onPlay={handlePlayUser}
             onPass={handlePassUser}
             onAutoHint={handleApplyCoachPlay}
+            onToggleGodMode={handleToggleGodMode}
           />
         </div>
 
@@ -242,10 +271,10 @@ export const ArenaView: React.FC = () => {
           </div>
         )}
 
-        {/* Slim Bottom Toolbar (Speed, Auto-Play, Restart) */}
+        {/* Slim Bottom Toolbar (Speed, Auto-Play, Swap Hands, Replay, Restart) */}
         <div className="shrink-0 h-8 bg-slate-950/90 border border-slate-800/90 rounded-xl px-2.5 sm:px-3 flex items-center justify-between text-[11px] shadow-sm">
           <div className="flex items-center space-x-1.5 sm:space-x-2">
-            <span className="text-slate-400 font-bold hidden sm:inline">出牌节奏:</span>
+            <span className="text-slate-400 font-bold hidden sm:inline">节奏:</span>
             <button
               onClick={() => setBotSpeedMs(1500)}
               className={`px-2 py-0.5 rounded-lg font-bold transition-all ${
@@ -273,6 +302,26 @@ export const ArenaView: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-2 sm:space-x-3">
+            <button
+              onClick={handleSwapHandsRematch}
+              className="text-amber-400 hover:text-amber-300 flex items-center space-x-1 font-bold text-[11px]"
+              title="与对手互换手牌重打本局"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span className="hidden sm:inline">换牌复赛</span>
+            </button>
+
+            {onNavigateToReplay && (
+              <button
+                onClick={handleReviewReplay}
+                className="text-sky-400 hover:text-sky-300 flex items-center space-x-1 font-bold text-[11px]"
+                title="复盘本局所有出牌"
+              >
+                <Film className="w-3 h-3" />
+                <span>复盘</span>
+              </button>
+            )}
+
             <button
               onClick={() => setIsAutoPlay(!isAutoPlay)}
               className={`px-2.5 py-0.5 rounded-lg font-black border flex items-center space-x-1 transition-transform active:scale-95 text-[11px] ${
@@ -320,6 +369,8 @@ export const ArenaView: React.FC = () => {
           gameState={gameState}
           onNextRound={handleNextRound}
           onRestartMatch={handleRestartMatch}
+          onSwapRematch={handleSwapHandsRematch}
+          onReviewReplay={handleReviewReplay}
         />
       )}
     </div>
