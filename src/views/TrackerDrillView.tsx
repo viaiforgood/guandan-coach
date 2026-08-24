@@ -85,45 +85,45 @@ export const TrackerDrillView: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="h-full w-full overflow-y-auto pr-1 space-y-3 sm:space-y-4 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30 rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
         <div>
-          <div className="flex items-center space-x-2 text-emerald-400 font-extrabold text-sm mb-1">
-            <Brain className="w-4 h-4" />
+          <div className="flex items-center space-x-2 text-emerald-400 font-extrabold text-xs mb-0.5">
+            <Brain className="w-3.5 h-3.5" />
             <span>五十定律与记牌算牌特训营</span>
           </div>
-          <h1 className="text-2xl font-black text-white">算无遗策 · 记牌强化训练</h1>
-          <p className="text-sm text-slate-300 mt-1">
+          <h1 className="text-lg sm:text-xl font-black text-white">算无遗策 · 记牌强化训练</h1>
+          <p className="text-xs text-slate-300">
             “逢五必看，逢十必算，记清王牌，掌控全盘”。高强度实战算牌测验。
           </p>
         </div>
 
-        <div className="text-xs bg-slate-800 text-slate-300 px-3 py-1.5 rounded-full font-bold self-start sm:self-auto border border-slate-700">
-          特训进度：第 {currentIdx + 1} / {DRILLS.length} 题
+        <div className="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full font-bold self-start sm:self-auto border border-slate-700">
+          特训进度: {currentIdx + 1} / {DRILLS.length}
         </div>
       </div>
 
       {/* Drill Question Card */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
         {/* Scenario */}
-        <div className="space-y-2">
-          <span className="text-xs font-bold text-amber-400 uppercase tracking-wide">
+        <div className="space-y-1.5">
+          <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wide">
             牌局场景推演
           </span>
-          <p className="text-sm sm:text-base text-slate-100 font-medium leading-relaxed bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+          <p className="text-xs sm:text-sm text-slate-100 font-medium leading-relaxed bg-slate-950/70 p-3 rounded-xl border border-slate-800">
             {activeDrill.scenario}
           </p>
-          <div className="text-xs text-emerald-400 bg-emerald-950/30 p-2.5 rounded-lg border border-emerald-500/30 font-semibold">
+          <div className="text-[11px] text-emerald-400 bg-emerald-950/30 p-2 rounded-lg border border-emerald-500/30 font-semibold">
             📊 记牌器数据：{activeDrill.playedSummary}
           </div>
         </div>
 
         {/* Question Title */}
-        <h3 className="text-base font-extrabold text-white pt-2">{activeDrill.question}</h3>
+        <h3 className="text-sm sm:text-base font-extrabold text-white pt-1">{activeDrill.question}</h3>
 
         {/* Options */}
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {activeDrill.options.map((opt, oIdx) => {
             const isChosen = selectedOpt === oIdx;
             const isCorrect = oIdx === activeDrill.correctIndex;
@@ -141,11 +141,11 @@ export const TrackerDrillView: React.FC = () => {
               <button
                 key={oIdx}
                 onClick={() => handleSelectOption(oIdx)}
-                className={`w-full text-left p-3.5 rounded-xl border text-xs sm:text-sm transition-all flex items-center justify-between ${btnStyle}`}
+                className={`w-full text-left p-3 rounded-xl border text-xs sm:text-sm transition-all flex items-center justify-between ${btnStyle}`}
               >
                 <span>{opt}</span>
-                {isAnswered && isCorrect && <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 ml-2" />}
-                {isAnswered && isChosen && !isCorrect && <XCircle className="w-5 h-5 text-rose-400 shrink-0 ml-2" />}
+                {isAnswered && isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 ml-2" />}
+                {isAnswered && isChosen && !isCorrect && <XCircle className="w-4 h-4 text-rose-400 shrink-0 ml-2" />}
               </button>
             );
           })}
@@ -153,16 +153,16 @@ export const TrackerDrillView: React.FC = () => {
 
         {/* Explanation Card */}
         {isAnswered && (
-          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs sm:text-sm text-slate-300 space-y-2 animate-fade-in">
-            <div className="font-extrabold text-amber-400 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4" />
+          <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-xs sm:text-sm text-slate-300 space-y-1.5 animate-fade-in">
+            <div className="font-extrabold text-amber-400 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" />
               <span>算牌与牌理解析：</span>
             </div>
-            <p className="leading-relaxed">{activeDrill.explanation}</p>
+            <p className="leading-relaxed text-[11px] sm:text-xs">{activeDrill.explanation}</p>
 
             <button
               onClick={handleNext}
-              className="mt-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black px-5 py-2 rounded-xl text-xs shadow-lg transition-transform active:scale-95"
+              className="mt-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black px-4 py-1.5 rounded-xl text-xs shadow-md transition-transform active:scale-95"
             >
               下一题特训 &rarr;
             </button>
