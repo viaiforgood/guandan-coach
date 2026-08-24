@@ -82,6 +82,8 @@ npm run build
 - **Philanthropic Initiative**: 🌟 **VI AI for Good Foundation (唯爱AI公益基金会)**
 - **Algorithm & Game Theory**: 🦅 **Zhejiang University AI Agent Research Lab (浙大智能体)**
 - **Tournament Standards**: 🎓 **North America Chinese University Alumni Guandan Club (NAACU Club)**
+- **Classical Manual Heritage**: 🏛️ **Guangzhou Sun Yat-sen University Alumni Association (广州市中山大学校友会)** (18 Gold Battle Rules)
+- **Battle Strategy Contribution**: 👩‍🏫 **Huijie (慧姐)** (Battle Insights & Card Signaling)
 - **Curriculum Architecture**: 👨‍🏫 **Michael HUO**
 
 ---
