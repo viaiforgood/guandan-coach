@@ -52,12 +52,22 @@ export const ReplayView: React.FC<ReplayViewProps> = ({ initialRecord, onLaunchS
   const stepState = getReplayStep(record, currentStepIndex);
   const totalSteps = record.history.length;
 
-  const seatNames: Record<PlayerSeat, string> = {
-    0: '我方 (南)',
-    1: '右家 (东)',
-    2: '对家 (北)',
-    3: '左家 (西)',
-  };
+  const is6p = record.mode === '6p' || record.initialHands.length === 6;
+  const seatNames: Record<number, string> = is6p
+    ? {
+        0: '我方 (南)',
+        1: '东南 (对方1)',
+        2: '西北 (搭档1)',
+        3: '正北 (对方2)',
+        4: '东北 (搭档2)',
+        5: '西南 (对方3)',
+      }
+    : {
+        0: '我方 (南)',
+        1: '右家 (东)',
+        2: '对家 (北)',
+        3: '左家 (西)',
+      };
 
   // Autoplay effect
   useEffect(() => {

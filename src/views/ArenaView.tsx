@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GameState, ReplayRecord } from '../core/types';
+import { GameMode, GameState, ReplayRecord } from '../core/types';
 import { initMatch, startRound, playMove, passMove, startSwapHandsMatch, exportReplayRecord } from '../core/engine';
 import { chooseAIAction, getCoachSuggestion } from '../core/ai';
 import { analyzeCardTracker } from '../core/tracker';
@@ -9,7 +9,7 @@ import { CardTrackerDrawer } from '../components/HUD/CardTrackerDrawer';
 import { CoachBubble } from '../components/Coach/CoachBubble';
 import { RoundEndModal } from '../components/Modals/RoundEndModal';
 import { Sound } from '../core/audio';
-import { Play, Pause, RotateCcw, Bot, Eye, RefreshCw, Film } from 'lucide-react';
+import { Play, Pause, RotateCcw, Bot, Eye, RefreshCw, Film, Users } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface ArenaViewProps {
@@ -17,7 +17,8 @@ interface ArenaViewProps {
 }
 
 export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
-  const [gameState, setGameState] = useState<GameState>(() => initMatch('2'));
+  const [gameMode, setGameMode] = useState<GameMode>('4p');
+  const [gameState, setGameState] = useState<GameState>(() => initMatch('2', '4p'));
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [botSpeedMs, setBotSpeedMs] = useState<number>(1000);
   const [isAutoPlay, setIsAutoPlay] = useState<boolean>(false);
@@ -25,17 +26,12 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
   const [mobileTab, setMobileTab] = useState<'table' | 'coach' | 'tracker'>('table');
 
   const { currentTurn, hands, levelRank, phase, history, isGodMode } = gameState;
-  const userHand = hands[0];
+  const userHand = hands[0] || [];
   const isMyTurn = currentTurn === 0;
 
   // Track cards
-  const seatCounts: [number, number, number, number] = [
-    hands[0].length,
-    hands[1].length,
-    hands[2].length,
-    hands[3].length,
-  ];
-  const tracker = analyzeCardTracker(history, userHand, seatCounts, levelRank, 0);
+  const seatCounts = hands.map((h) => h.length);
+  const tracker = analyzeCardTracker(history, userHand, seatCounts, levelRank, 0, hands.length);
 
   // Coach suggestion
   const coachSuggestion = getCoachSuggestion(userHand, gameState, 0);
@@ -59,7 +55,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
 
     if (currentTurn !== 0) {
       const timer = setTimeout(() => {
-        const botHand = hands[currentTurn];
+        const botHand = hands[currentTurn] || [];
         const aiDecision = chooseAIAction(currentTurn, botHand, gameState, 'standard');
 
         if (aiDecision.action === 'play' && aiDecision.combo) {
@@ -174,6 +170,14 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
     showNotice('🔄 换位复赛开启！你已拿到对手上一局的手牌，请逆风翻盘！');
   };
 
+  const handleSwitchMode = (mode: GameMode) => {
+    Sound.playCardDeal();
+    setGameMode(mode);
+    setGameState(initMatch('2', mode));
+    setSelectedIds(new Set());
+    showNotice(`已切换为【${mode === '6p' ? '3副牌·6人团战模式' : '2副牌·4人标准模式'}】！`);
+  };
+
   const handleReviewReplay = () => {
     const jsonStr = exportReplayRecord(gameState);
     const record = JSON.parse(jsonStr) as ReplayRecord;
@@ -195,7 +199,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
 
   const handleRestartMatch = () => {
     Sound.playCardDeal();
-    setGameState(initMatch('2'));
+    setGameState(initMatch('2', gameMode));
     setSelectedIds(new Set());
   };
 
@@ -240,7 +244,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
           </button>
         </div>
 
-        {/* Poker Felt Table (Flexible height, fits 100% inside screen) */}
+        {/* Poker Felt Table */}
         <div className={`flex-1 min-h-0 w-full ${mobileTab !== 'table' ? 'hidden lg:flex' : 'flex'}`}>
           <PokerTable
             gameState={gameState}
@@ -271,37 +275,63 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
           </div>
         )}
 
-        {/* Slim Bottom Toolbar (Speed, Auto-Play, Swap Hands, Replay, Restart) */}
-        <div className="shrink-0 h-8 bg-slate-950/90 border border-slate-800/90 rounded-xl px-2.5 sm:px-3 flex items-center justify-between text-[11px] shadow-sm">
-          <div className="flex items-center space-x-1.5 sm:space-x-2">
-            <span className="text-slate-400 font-bold hidden sm:inline">节奏:</span>
+        {/* Slim Bottom Toolbar (Mode Selector, Speed, Swap Hands, Replay, Restart) */}
+        <div className="shrink-0 h-8 bg-slate-950/90 border border-slate-800/90 rounded-xl px-2 sm:px-3 flex items-center justify-between text-[11px] shadow-sm">
+          {/* Mode Switcher: 4p vs 6p */}
+          <div className="flex items-center space-x-1 sm:space-x-1.5">
+            <span className="text-slate-400 font-bold hidden md:inline">模式:</span>
+            <button
+              onClick={() => handleSwitchMode('4p')}
+              className={`px-2 py-0.5 rounded-lg font-bold text-[10px] sm:text-[11px] transition-all ${
+                gameMode === '4p'
+                  ? 'bg-amber-500 text-slate-950 shadow'
+                  : 'bg-slate-900 text-slate-400 hover:text-white'
+              }`}
+            >
+              4人标准
+            </button>
+            <button
+              onClick={() => handleSwitchMode('6p')}
+              className={`px-2 py-0.5 rounded-lg font-bold text-[10px] sm:text-[11px] transition-all flex items-center gap-0.5 ${
+                gameMode === '6p'
+                  ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-slate-950 shadow'
+                  : 'bg-slate-900 text-slate-400 hover:text-white'
+              }`}
+            >
+              <Users className="w-2.5 h-2.5" />
+              <span>6人团战</span>
+            </button>
+
+            <span className="text-slate-700 mx-0.5">|</span>
+
+            {/* Speed buttons */}
             <button
               onClick={() => setBotSpeedMs(1500)}
-              className={`px-2 py-0.5 rounded-lg font-bold transition-all ${
-                botSpeedMs === 1500 ? 'bg-amber-500 text-slate-950 shadow-sm' : 'bg-slate-900 text-slate-300'
+              className={`px-1.5 py-0.5 rounded font-bold text-[10px] ${
+                botSpeedMs === 1500 ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
               }`}
             >
               1.5s
             </button>
             <button
               onClick={() => setBotSpeedMs(800)}
-              className={`px-2 py-0.5 rounded-lg font-bold transition-all ${
-                botSpeedMs === 800 ? 'bg-amber-500 text-slate-950 shadow-sm' : 'bg-slate-900 text-slate-300'
+              className={`px-1.5 py-0.5 rounded font-bold text-[10px] ${
+                botSpeedMs === 800 ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
               }`}
             >
               0.8s
             </button>
             <button
               onClick={() => setBotSpeedMs(200)}
-              className={`px-2 py-0.5 rounded-lg font-bold transition-all ${
-                botSpeedMs === 200 ? 'bg-amber-500 text-slate-950 shadow-sm' : 'bg-slate-900 text-slate-300'
+              className={`px-1.5 py-0.5 rounded font-bold text-[10px] ${
+                botSpeedMs === 200 ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
               }`}
             >
               0.2s
             </button>
           </div>
 
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="flex items-center space-x-1.5 sm:space-x-2">
             <button
               onClick={handleSwapHandsRematch}
               className="text-amber-400 hover:text-amber-300 flex items-center space-x-1 font-bold text-[11px]"
@@ -324,7 +354,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
 
             <button
               onClick={() => setIsAutoPlay(!isAutoPlay)}
-              className={`px-2.5 py-0.5 rounded-lg font-black border flex items-center space-x-1 transition-transform active:scale-95 text-[11px] ${
+              className={`px-2 py-0.5 rounded-lg font-black border flex items-center space-x-1 transition-transform active:scale-95 text-[11px] ${
                 isAutoPlay
                   ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
                   : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'

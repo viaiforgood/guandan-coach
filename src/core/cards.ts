@@ -21,12 +21,16 @@ export function isRedSuit(suit: Suit): boolean {
   return suit === 'H' || suit === 'D';
 }
 
-export function createDeck(): Card[] {
+/**
+ * Creates standard Guandan deck:
+ * - 2 decks: 108 cards (4 players)
+ * - 3 decks: 162 cards (6 players)
+ */
+export function createDeck(decksCount: number = 2): Card[] {
   const deck: Card[] = [];
   let idCounter = 0;
 
-  // 2 sets of standard 52 cards
-  for (let set = 0; set < 2; set++) {
+  for (let set = 0; set < decksCount; set++) {
     for (const suit of SUITS) {
       for (const rank of NATURAL_RANKS) {
         deck.push({
@@ -93,13 +97,14 @@ export function shuffleDeck(deck: Card[], rng: () => number = Math.random): Card
   return result;
 }
 
-export function dealHands(deck: Card[]): [Card[], Card[], Card[], Card[]] {
-  if (deck.length !== 108) {
-    throw new Error(`Expected 108 cards, got ${deck.length}`);
+export function dealHands(deck: Card[], playerCount: number = 4): Card[][] {
+  const expectedTotal = playerCount === 6 ? 162 : 108;
+  if (deck.length !== expectedTotal) {
+    throw new Error(`Expected ${expectedTotal} cards, got ${deck.length}`);
   }
-  const hands: [Card[], Card[], Card[], Card[]] = [[], [], [], []];
+  const hands: Card[][] = Array.from({ length: playerCount }, () => []);
   for (let i = 0; i < deck.length; i++) {
-    hands[i % 4].push(deck[i]);
+    hands[i % playerCount].push(deck[i]);
   }
   return hands;
 }

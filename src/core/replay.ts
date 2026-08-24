@@ -6,8 +6,8 @@ export interface ReplayStepState {
   totalSteps: number;
   currentTurn: PlayerSeat;
   actionTaken: GameHistoryEntry | null;
-  hands: [Card[], Card[], Card[], Card[]];
-  trickPlays: Record<PlayerSeat, TrickPlay | null>;
+  hands: Card[][];
+  trickPlays: Record<number, TrickPlay | null>;
   currentCombo: Combo | null;
   commentary: string;
   isBlunder?: boolean;
@@ -19,27 +19,37 @@ export interface ReplayStepState {
 export function getReplayStep(record: ReplayRecord, stepIndex: number): ReplayStepState {
   const totalSteps = record.history.length;
   const clampedStep = Math.max(0, Math.min(totalSteps, stepIndex));
+  const is6p = record.mode === '6p' || record.initialHands.length === 6;
+  const playerCount = is6p ? 6 : 4;
 
   // Initialize hands from initial hands
-  let currentHands: [Card[], Card[], Card[], Card[]] = [
-    [...record.initialHands[0]],
-    [...record.initialHands[1]],
-    [...record.initialHands[2]],
-    [...record.initialHands[3]],
-  ];
+  let currentHands: Card[][] = record.initialHands.map((h) => [...h]);
 
-  let currentTrickPlays: Record<PlayerSeat, TrickPlay | null> = { 0: null, 1: null, 2: null, 3: null };
+  let currentTrickPlays: Record<number, TrickPlay | null> = {};
+  for (let i = 0; i < playerCount; i++) currentTrickPlays[i] = null;
+
   let currentCombo: Combo | null = null;
   let lastAction: GameHistoryEntry | null = null;
   let commentary = '开局首发领牌阶段。';
   let isBlunder = false;
 
-  const seatNames: Record<PlayerSeat, string> = {
+  const seatNames4p: Record<number, string> = {
     0: '我方 (南)',
     1: '右家 (东)',
     2: '对家 (北)',
     3: '左家 (西)',
   };
+
+  const seatNames6p: Record<number, string> = {
+    0: '我方 (南)',
+    1: '东南 (对方1)',
+    2: '西北 (搭档1)',
+    3: '正北 (对方2)',
+    4: '东北 (搭档2)',
+    5: '西南 (对方3)',
+  };
+
+  const seatNames = is6p ? seatNames6p : seatNames4p;
 
   // Replay actions up to clampedStep
   for (let i = 0; i < clampedStep; i++) {
@@ -48,7 +58,9 @@ export function getReplayStep(record: ReplayRecord, stepIndex: number): ReplaySt
 
     if (entry.action === 'play' && entry.combo) {
       const cardIds = new Set(entry.combo.cards.map((c) => c.id));
-      currentHands[entry.seat] = currentHands[entry.seat].filter((c) => !cardIds.has(c.id));
+      if (currentHands[entry.seat]) {
+        currentHands[entry.seat] = currentHands[entry.seat].filter((c) => !cardIds.has(c.id));
+      }
       currentTrickPlays[entry.seat] = {
         seat: entry.seat,
         action: 'play',
@@ -59,7 +71,7 @@ export function getReplayStep(record: ReplayRecord, stepIndex: number): ReplaySt
 
       // Commentary
       const comboDesc = describeCombo(entry.combo);
-      commentary = `${seatNames[entry.seat]} 打出【${comboDesc}】(${entry.combo.cards.length}张)。`;
+      commentary = `${seatNames[entry.seat] || `玩家${entry.seat}`} 打出【${comboDesc}】(${entry.combo.cards.length}张)。`;
 
       // Check if team cut teammate
       if (entry.seat === 0 && currentTrickPlays[2]?.action === 'play') {
@@ -70,18 +82,12 @@ export function getReplayStep(record: ReplayRecord, stepIndex: number): ReplaySt
         seat: entry.seat,
         action: 'pass',
       };
-      commentary = `${seatNames[entry.seat]} 选择【过牌】。`;
+      commentary = `${seatNames[entry.seat] || `玩家${entry.seat}`} 选择【过牌】。`;
     }
 
     // Check if new trick starts (all active players passed)
-    // If next step exists or current entry cleared trick
     if (entry.handsAfter) {
-      currentHands = [
-        [...entry.handsAfter[0]],
-        [...entry.handsAfter[1]],
-        [...entry.handsAfter[2]],
-        [...entry.handsAfter[3]],
-      ];
+      currentHands = entry.handsAfter.map((h) => [...h]);
     }
   }
 

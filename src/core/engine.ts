@@ -1,4 +1,4 @@
-import { Card, Combo, GameHistoryEntry, GameState, LevelRank, PlayerSeat, ReplayRecord, Team, TrickPlay } from './types';
+import { Card, Combo, GameHistoryEntry, GameMode, GameState, LevelRank, PlayerSeat, ReplayRecord, Team, TrickPlay } from './types';
 import { createDeck, dealHands, shuffleDeck, sortHand } from './cards';
 import { compare } from './combos';
 
@@ -13,22 +13,30 @@ export function rankToLevel(rank: LevelRank): number {
   return LEVEL_SEQUENCE.indexOf(rank) + 2;
 }
 
-export function getTeamOf(seat: PlayerSeat): Team {
+export function getTeamOf(seat: PlayerSeat, mode: GameMode = '4p'): Team {
+  if (mode === '6p') {
+    return seat % 2 === 0 ? 0 : 1; // 0, 2, 4 -> Team 0; 1, 3, 5 -> Team 1
+  }
   return seat === 0 || seat === 2 ? 0 : 1;
 }
 
-export function initMatch(startingRank: LevelRank = '2'): GameState {
+export function initMatch(startingRank: LevelRank = '2', mode: GameMode = '4p'): GameState {
   const initialLevel = rankToLevel(startingRank);
+  const playerCount = mode === '6p' ? 6 : 4;
+  const initialTrickPlays: Record<number, TrickPlay | null> = {};
+  for (let i = 0; i < playerCount; i++) initialTrickPlays[i] = null;
+
   return startRound({
+    mode,
     levelRank: startingRank,
     teamLevels: [initialLevel, initialLevel],
-    hands: [[], [], [], []],
-    initialHands: [[], [], [], []],
+    hands: Array.from({ length: playerCount }, () => []),
+    initialHands: Array.from({ length: playerCount }, () => []),
     currentTurn: 0,
     lastPlayerIndex: null,
     currentCombo: null,
     history: [],
-    trickPlays: { 0: null, 1: null, 2: null, 3: null },
+    trickPlays: initialTrickPlays,
     finishedOrder: [],
     phase: 'playing',
     firstLeadSeat: 0,
@@ -37,28 +45,30 @@ export function initMatch(startingRank: LevelRank = '2'): GameState {
 }
 
 export function startRound(prevState: GameState): GameState {
-  const deck = shuffleDeck(createDeck());
-  const dealt = dealHands(deck);
+  const mode = prevState.mode || '4p';
+  const playerCount = mode === '6p' ? 6 : 4;
+  const decksCount = mode === '6p' ? 3 : 2;
+
+  const deck = shuffleDeck(createDeck(decksCount));
+  const dealt = dealHands(deck, playerCount);
 
   const levelRank = prevState.levelRank;
-  const sortedHands = dealt.map((hand) => sortHand(hand, levelRank, true)) as [Card[], Card[], Card[], Card[]];
+  const sortedHands = dealt.map((hand) => sortHand(hand, levelRank, true));
 
   const firstLead = prevState.finishedOrder.length > 0 ? prevState.finishedOrder[0] : 0;
+  const initialTrickPlays: Record<number, TrickPlay | null> = {};
+  for (let i = 0; i < playerCount; i++) initialTrickPlays[i] = null;
 
   return {
     ...prevState,
+    mode,
     hands: sortedHands,
-    initialHands: [
-      [...sortedHands[0]],
-      [...sortedHands[1]],
-      [...sortedHands[2]],
-      [...sortedHands[3]],
-    ],
+    initialHands: sortedHands.map((h) => [...h]),
     currentTurn: firstLead,
     lastPlayerIndex: null,
     currentCombo: null,
     history: [],
-    trickPlays: { 0: null, 1: null, 2: null, 3: null },
+    trickPlays: initialTrickPlays,
     finishedOrder: [],
     phase: 'playing',
     firstLeadSeat: firstLead,
@@ -68,36 +78,40 @@ export function startRound(prevState: GameState): GameState {
 
 /**
  * Swap Hands Rematch (复赛模式 · 换牌挑战)
- * Swaps cards between Team 0 (South/North) and Team 1 (East/West):
- * - User (Seat 0) gets Opponent (Seat 1) hand
- * - Teammate (Seat 2) gets Opponent (Seat 3) hand
- * - Opponents get User & Teammate hands
  */
 export function startSwapHandsMatch(prevState: GameState): GameState {
-  const { initialHands, levelRank } = prevState;
+  const { initialHands, levelRank, mode } = prevState;
+  const playerCount = mode === '6p' ? 6 : 4;
 
-  // Swap: 0 <-> 1, 2 <-> 3
-  const swappedHands: [Card[], Card[], Card[], Card[]] = [
-    sortHand([...initialHands[1]], levelRank, true),
-    sortHand([...initialHands[0]], levelRank, true),
-    sortHand([...initialHands[3]], levelRank, true),
-    sortHand([...initialHands[2]], levelRank, true),
-  ];
+  const swappedHands: Card[][] = [];
+  if (mode === '6p') {
+    // 0 <-> 1, 2 <-> 3, 4 <-> 5
+    swappedHands[0] = sortHand([...initialHands[1]], levelRank, true);
+    swappedHands[1] = sortHand([...initialHands[0]], levelRank, true);
+    swappedHands[2] = sortHand([...initialHands[3]], levelRank, true);
+    swappedHands[3] = sortHand([...initialHands[2]], levelRank, true);
+    swappedHands[4] = sortHand([...initialHands[5]], levelRank, true);
+    swappedHands[5] = sortHand([...initialHands[4]], levelRank, true);
+  } else {
+    // 0 <-> 1, 2 <-> 3
+    swappedHands[0] = sortHand([...initialHands[1]], levelRank, true);
+    swappedHands[1] = sortHand([...initialHands[0]], levelRank, true);
+    swappedHands[2] = sortHand([...initialHands[3]], levelRank, true);
+    swappedHands[3] = sortHand([...initialHands[2]], levelRank, true);
+  }
+
+  const initialTrickPlays: Record<number, TrickPlay | null> = {};
+  for (let i = 0; i < playerCount; i++) initialTrickPlays[i] = null;
 
   return {
     ...prevState,
     hands: swappedHands,
-    initialHands: [
-      [...swappedHands[0]],
-      [...swappedHands[1]],
-      [...swappedHands[2]],
-      [...swappedHands[3]],
-    ],
+    initialHands: swappedHands.map((h) => [...h]),
     currentTurn: 0,
     lastPlayerIndex: null,
     currentCombo: null,
     history: [],
-    trickPlays: { 0: null, 1: null, 2: null, 3: null },
+    trickPlays: initialTrickPlays,
     finishedOrder: [],
     phase: 'playing',
     firstLeadSeat: 0,
@@ -105,9 +119,10 @@ export function startSwapHandsMatch(prevState: GameState): GameState {
 }
 
 export function nextActiveSeat(currentSeat: PlayerSeat, hands: Card[][]): PlayerSeat {
-  let next = ((currentSeat + 1) % 4) as PlayerSeat;
+  const count = hands.length;
+  let next = ((currentSeat + 1) % count) as PlayerSeat;
   while (hands[next].length === 0) {
-    next = ((next + 1) % 4) as PlayerSeat;
+    next = ((next + 1) % count) as PlayerSeat;
   }
   return next;
 }
@@ -144,8 +159,7 @@ export function playMove(
 
   // Deduct cards from player hand
   const newHand = hand.filter((c) => !cardIds.has(c.id));
-  const newHands: [Card[], Card[], Card[], Card[]] = [...state.hands];
-  newHands[seat] = newHand;
+  const newHands: Card[][] = state.hands.map((h, idx) => (idx === seat ? newHand : h));
 
   // Track finished order
   const finishedOrder = [...state.finishedOrder];
@@ -160,18 +174,13 @@ export function playMove(
     combo,
     cards: combo.cards,
     timestamp: Date.now(),
-    handsAfter: [
-      [...newHands[0]],
-      [...newHands[1]],
-      [...newHands[2]],
-      [...newHands[3]],
-    ],
+    handsAfter: newHands.map((h) => [...h]),
   };
 
-  // Check if round is over (3 players have finished)
-  if (finishedOrder.length >= 3) {
-    // Add 4th player
-    for (let s = 0; s < 4; s++) {
+  const playerCount = state.hands.length;
+  // Check if round is over (all except last player finished)
+  if (finishedOrder.length >= playerCount - 1) {
+    for (let s = 0; s < playerCount; s++) {
       if (!finishedOrder.includes(s as PlayerSeat)) {
         finishedOrder.push(s as PlayerSeat);
       }
@@ -223,28 +232,27 @@ export function passMove(
     seat,
     action: 'pass',
     timestamp: Date.now(),
-    handsAfter: [
-      [...state.hands[0]],
-      [...state.hands[1]],
-      [...state.hands[2]],
-      [...state.hands[3]],
-    ],
+    handsAfter: state.hands.map((h) => [...h]),
   };
 
   const nextSeat = nextActiveSeat(seat, state.hands);
 
-  // Check if trick is won (all other active players passed back to the last player who played)
-  const isTrickComplete = nextSeat === state.lastPlayerIndex || (
-    state.lastPlayerIndex !== null && state.hands[state.lastPlayerIndex].length === 0 && nextActiveSeat(state.lastPlayerIndex, state.hands) === nextSeat
-  );
+  // Check if trick is complete
+  const isTrickComplete =
+    nextSeat === state.lastPlayerIndex ||
+    (state.lastPlayerIndex !== null &&
+      state.hands[state.lastPlayerIndex].length === 0 &&
+      nextActiveSeat(state.lastPlayerIndex, state.hands) === nextSeat);
 
   if (isTrickComplete) {
-    // Determine who leads next trick: if trick winner already finished, teammate (接风) leads
     let leader = state.lastPlayerIndex!;
     if (state.hands[leader].length === 0) {
-      const teammate = ((leader + 2) % 4) as PlayerSeat;
+      const teammate = ((leader + 2) % state.hands.length) as PlayerSeat;
       leader = state.hands[teammate].length > 0 ? teammate : nextActiveSeat(leader, state.hands);
     }
+
+    const resetTrickPlays: Record<number, TrickPlay | null> = {};
+    for (let i = 0; i < state.hands.length; i++) resetTrickPlays[i] = null;
 
     return {
       nextState: {
@@ -252,7 +260,7 @@ export function passMove(
         currentTurn: leader,
         lastPlayerIndex: null,
         currentCombo: null,
-        trickPlays: { 0: null, 1: null, 2: null, 3: null },
+        trickPlays: resetTrickPlays,
         history: [...state.history, historyEntry],
       },
     };
@@ -268,18 +276,61 @@ export function passMove(
   };
 }
 
-export function calculateRoundScore(finishedOrder: PlayerSeat[]): {
+export function calculateRoundScore(
+  finishedOrder: PlayerSeat[],
+  mode: GameMode = '4p'
+): {
   winningTeam: Team;
   levelGain: number;
   isDoubleDown: boolean;
   scoreDescription: string;
 } {
   const first = finishedOrder[0];
-  const winningTeam = getTeamOf(first);
+  const winningTeam = getTeamOf(first, mode);
 
-  const team0Order = finishedOrder.map(getTeamOf);
+  if (mode === '6p') {
+    // 6-Player Mode (3v3 Team Battle)
+    const teamOrder = finishedOrder.map((s) => getTeamOf(s, '6p'));
+    const teamWins = teamOrder.filter((t) => t === winningTeam);
+
+    // 1st, 2nd, 3rd all same team -> +4 levels (大满贯)
+    if (teamOrder[0] === winningTeam && teamOrder[1] === winningTeam && teamOrder[2] === winningTeam) {
+      return {
+        winningTeam,
+        levelGain: 4,
+        isDoubleDown: true,
+        scoreDescription: `${winningTeam === 0 ? '我方' : '对方'}3v3全胜大满贯（包揽前三游），狂升 4 级！`,
+      };
+    } else if (teamOrder[0] === winningTeam && teamOrder[1] === winningTeam) {
+      // 1st & 2nd same team -> +3 levels
+      return {
+        winningTeam,
+        levelGain: 3,
+        isDoubleDown: true,
+        scoreDescription: `${winningTeam === 0 ? '我方' : '对方'}包揽一、二游，升 3 级！`,
+      };
+    } else if (teamOrder[0] === winningTeam && teamOrder[2] === winningTeam) {
+      // 1st & 3rd same team -> +2 levels
+      return {
+        winningTeam,
+        levelGain: 2,
+        isDoubleDown: false,
+        scoreDescription: `${winningTeam === 0 ? '我方' : '对方'}获一、三游，升 2 级！`,
+      };
+    } else {
+      // 1st only -> +1 level
+      return {
+        winningTeam,
+        levelGain: 1,
+        isDoubleDown: false,
+        scoreDescription: `${winningTeam === 0 ? '我方' : '对方'}获头游，升 1 级！`,
+      };
+    }
+  }
+
+  // 4-Player Standard Mode
+  const team0Order = finishedOrder.map((s) => getTeamOf(s, '4p'));
   if (team0Order[0] === winningTeam && team0Order[1] === winningTeam) {
-    // 1st & 2nd same team: Double Down (双下) -> +3
     return {
       winningTeam,
       levelGain: 3,
@@ -287,7 +338,6 @@ export function calculateRoundScore(finishedOrder: PlayerSeat[]): {
       scoreDescription: `${winningTeam === 0 ? '我方' : '对方'}双下（包揽前二），升 3 级！`,
     };
   } else if (team0Order[0] === winningTeam && team0Order[2] === winningTeam) {
-    // 1st & 3rd same team -> +2
     return {
       winningTeam,
       levelGain: 2,
@@ -295,7 +345,6 @@ export function calculateRoundScore(finishedOrder: PlayerSeat[]): {
       scoreDescription: `${winningTeam === 0 ? '我方' : '对方'}获一、三游，升 2 级！`,
     };
   } else {
-    // 1st & 4th same team -> +1
     return {
       winningTeam,
       levelGain: 1,
@@ -306,7 +355,7 @@ export function calculateRoundScore(finishedOrder: PlayerSeat[]): {
 }
 
 function finalizeRound(state: GameState): GameState {
-  const { winningTeam, levelGain } = calculateRoundScore(state.finishedOrder);
+  const { winningTeam, levelGain } = calculateRoundScore(state.finishedOrder, state.mode);
   const newTeamLevels: [number, number] = [...state.teamLevels];
   newTeamLevels[winningTeam] += levelGain;
 
@@ -321,26 +370,21 @@ function finalizeRound(state: GameState): GameState {
   };
 }
 
-/**
- * Export replay record to JSON string
- */
 export function exportReplayRecord(state: GameState, title?: string): string {
   const record: ReplayRecord = {
     version: '1.0',
     timestamp: Date.now(),
+    mode: state.mode || '4p',
     levelRank: state.levelRank,
     teamLevels: state.teamLevels,
     initialHands: state.initialHands,
     history: state.history,
     finishedOrder: state.finishedOrder,
-    title: title || `掼蛋对战牌谱 (打${state.levelRank})`,
+    title: title || `${state.mode === '6p' ? '六人团战牌谱' : '标准掼蛋牌谱'} (打${state.levelRank})`,
   };
   return JSON.stringify(record, null, 2);
 }
 
-/**
- * Import replay record from JSON string
- */
 export function importReplayRecord(jsonStr: string): ReplayRecord {
   const record = JSON.parse(jsonStr) as ReplayRecord;
   if (!record.initialHands || !record.history || !record.levelRank) {

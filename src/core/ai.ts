@@ -7,10 +7,10 @@ import { citePrinciple } from './knowledge';
 
 export type AIDifficulty = 'novice' | 'standard' | 'master';
 
-const TEAM_MAP: Record<PlayerSeat, number> = { 0: 0, 1: 1, 2: 0, 3: 1 };
+const TEAM_MAP: Record<number, number> = { 0: 0, 1: 1, 2: 0, 3: 1, 4: 0, 5: 1 };
 
 export function isTeammate(seatA: PlayerSeat, seatB: PlayerSeat): boolean {
-  return TEAM_MAP[seatA] === TEAM_MAP[seatB];
+  return seatA % 2 === seatB % 2;
 }
 
 export function chooseAIAction(

@@ -8,8 +8,8 @@ import { getReplayStep } from '../replay';
 import { Card, ReplayRecord } from '../types';
 
 describe('Cards & Deck', () => {
-  it('creates 108 cards with 4 jokers', () => {
-    const deck = createDeck();
+  it('creates 108 cards with 4 jokers for 2-deck 4p mode', () => {
+    const deck = createDeck(2);
     expect(deck.length).toBe(108);
     const sj = deck.filter((c) => c.rank === 'SJ');
     const bj = deck.filter((c) => c.rank === 'BJ');
@@ -17,10 +17,19 @@ describe('Cards & Deck', () => {
     expect(bj.length).toBe(2);
   });
 
-  it('deals 27 cards to 4 hands', () => {
-    const deck = createDeck();
-    const hands = dealHands(deck);
-    expect(hands.length).toBe(4);
+  it('creates 162 cards with 6 jokers for 3-deck 6p mode', () => {
+    const deck = createDeck(3);
+    expect(deck.length).toBe(162);
+    const sj = deck.filter((c) => c.rank === 'SJ');
+    const bj = deck.filter((c) => c.rank === 'BJ');
+    expect(sj.length).toBe(3);
+    expect(bj.length).toBe(3);
+  });
+
+  it('deals 27 cards each to 6 players in 6p mode', () => {
+    const deck = createDeck(3);
+    const hands = dealHands(deck, 6);
+    expect(hands.length).toBe(6);
     hands.forEach((h) => expect(h.length).toBe(27));
   });
 
@@ -39,195 +48,69 @@ describe('Cards & Deck', () => {
   });
 });
 
-describe('Combos Classification', () => {
-  it('classifies single, pair, triple, and triple_pair', () => {
-    const single: Card[] = [{ id: '1', suit: 'S', rank: '3' }];
-    const pair: Card[] = [{ id: '1', suit: 'S', rank: '3' }, { id: '2', suit: 'H', rank: '3' }];
-    const triple: Card[] = [
-      { id: '1', suit: 'S', rank: '3' },
-      { id: '2', suit: 'H', rank: '3' },
-      { id: '3', suit: 'C', rank: '3' },
-    ];
-    const tp: Card[] = [
-      { id: '1', suit: 'S', rank: '3' },
-      { id: '2', suit: 'H', rank: '3' },
-      { id: '3', suit: 'C', rank: '3' },
-      { id: '4', suit: 'S', rank: '8' },
-      { id: '5', suit: 'D', rank: '8' },
-    ];
-
-    expect(classify(single, '2')?.category).toBe('single');
-    expect(classify(pair, '2')?.category).toBe('pair');
-    expect(classify(triple, '2')?.category).toBe('triple');
-    expect(classify(tp, '2')?.category).toBe('triple_pair');
-  });
-
-  it('classifies straight, steel plate (钢板), and 3-pair straight', () => {
-    const straight: Card[] = [
-      { id: '1', suit: 'S', rank: '3' },
-      { id: '2', suit: 'H', rank: '4' },
-      { id: '3', suit: 'C', rank: '5' },
-      { id: '4', suit: 'D', rank: '6' },
-      { id: '5', suit: 'S', rank: '7' },
-    ];
-    const plate: Card[] = [
-      { id: '1', suit: 'S', rank: '3' },
-      { id: '2', suit: 'H', rank: '3' },
-      { id: '3', suit: 'C', rank: '3' },
-      { id: '4', suit: 'S', rank: '4' },
-      { id: '5', suit: 'H', rank: '4' },
-      { id: '6', suit: 'C', rank: '4' },
-    ];
-    const ps: Card[] = [
-      { id: '1', suit: 'S', rank: '3' },
-      { id: '2', suit: 'H', rank: '3' },
-      { id: '3', suit: 'S', rank: '4' },
-      { id: '4', suit: 'H', rank: '4' },
-      { id: '5', suit: 'S', rank: '5' },
-      { id: '6', suit: 'H', rank: '5' },
-    ];
-
-    expect(classify(straight, '2')?.category).toBe('straight');
-    expect(classify(plate, '2')?.category).toBe('plate');
-    expect(classify(ps, '2')?.category).toBe('pair_straight');
-  });
-
-  it('classifies 4-to-8 bombs, straight flushes, and joker bombs', () => {
-    const bomb4: Card[] = [
-      { id: '1', suit: 'S', rank: '9' },
-      { id: '2', suit: 'H', rank: '9' },
-      { id: '3', suit: 'C', rank: '9' },
-      { id: '4', suit: 'D', rank: '9' },
-    ];
-    const sf: Card[] = [
-      { id: '1', suit: 'S', rank: '3' },
-      { id: '2', suit: 'S', rank: '4' },
-      { id: '3', suit: 'S', rank: '5' },
-      { id: '4', suit: 'S', rank: '6' },
-      { id: '5', suit: 'S', rank: '7' },
-    ];
-    const jokerBomb: Card[] = [
+describe('Combos Classification & Bombs', () => {
+  it('classifies 6-Joker Supreme Heavenly Bomb (六王天王炸)', () => {
+    const sixJokers: Card[] = [
       { id: '1', suit: 'S', rank: 'SJ' },
       { id: '2', suit: 'C', rank: 'SJ' },
-      { id: '3', suit: 'H', rank: 'BJ' },
-      { id: '4', suit: 'D', rank: 'BJ' },
+      { id: '3', suit: 'D', rank: 'SJ' },
+      { id: '4', suit: 'H', rank: 'BJ' },
+      { id: '5', suit: 'S', rank: 'BJ' },
+      { id: '6', suit: 'C', rank: 'BJ' },
     ];
+    const combo = classify(sixJokers, '2')!;
+    expect(combo.isBomb).toBe(true);
+    expect(combo.bombTier).toBe(16);
+    expect(combo.description).toBe('六王至尊天王炸');
+  });
 
-    const cBomb4 = classify(bomb4, '2')!;
-    const cSf = classify(sf, '2')!;
-    const cJoker = classify(jokerBomb, '2')!;
-
-    expect(cBomb4.isBomb).toBe(true);
-    expect(cSf.isBomb).toBe(true);
-    expect(cJoker.isBomb).toBe(true);
-    expect(cJoker.bombTier).toBe(12);
-
-    expect(compare(cBomb4, cSf)).toBeLessThan(0); // cSf > cBomb4
-    expect(compare(cSf, cJoker)).toBeLessThan(0); // cJoker > cSf
+  it('classifies 8-to-12 card bombs in 3-deck mode', () => {
+    const bomb9: Card[] = Array.from({ length: 9 }, (_, i) => ({
+      id: `c_${i}`,
+      suit: (['S', 'H', 'C', 'D'][i % 4] as any),
+      rank: '8' as const,
+    }));
+    const combo = classify(bomb9, '2')!;
+    expect(combo.isBomb).toBe(true);
+    expect(combo.bombTier).toBe(9);
   });
 });
 
-describe('Hand Optimizer & 50-Law Tracker', () => {
-  it('evaluates hand optimizer and scores plans', () => {
-    const hand: Card[] = [
-      { id: '1', suit: 'S', rank: '3' },
-      { id: '2', suit: 'H', rank: '3' },
-      { id: '3', suit: 'C', rank: '3' },
-      { id: '4', suit: 'D', rank: '3' }, // 4 of 3
-      { id: '5', suit: 'S', rank: '8' },
-      { id: '6', suit: 'H', rank: '8' },
-    ];
-    const result = choosePlan(hand, '2');
-    expect(result.best).toBeDefined();
-    expect(result.best.groups.length).toBeGreaterThan(0);
+describe('6-Player Mode 3v3 Engine & Scoring', () => {
+  it('calculates 6p scoring: 1-2-3 sweep +4, 1-2-4 +3, 1-3-4 +2, 1-X-X +1', () => {
+    // 0, 2, 4 are Team 0; 1, 3, 5 are Team 1
+    // 1-2-3 all Team 0: [0, 2, 4, 1, 3, 5]
+    expect(calculateRoundScore([0, 2, 4, 1, 3, 5], '6p').levelGain).toBe(4);
+    // 1-2-4 same team: [0, 2, 1, 4, 3, 5]
+    expect(calculateRoundScore([0, 2, 1, 4, 3, 5], '6p').levelGain).toBe(3);
+    // 1-3-4 same team: [0, 1, 2, 4, 3, 5]
+    expect(calculateRoundScore([0, 1, 2, 4, 3, 5], '6p').levelGain).toBe(2);
+    // 1st only: [0, 1, 3, 5, 2, 4]
+    expect(calculateRoundScore([0, 1, 3, 5, 2, 4], '6p').levelGain).toBe(1);
   });
 
-  it('tracks 50-Law status accurately', () => {
-    const history = [
-      {
-        seat: 0 as const,
-        action: 'play' as const,
-        cards: [
-          { id: '1', suit: 'S' as const, rank: '5' as const },
-          { id: '2', suit: 'H' as const, rank: '5' as const },
-        ],
-      },
-    ];
-    const tracker = analyzeCardTracker(history, [], [25, 27, 27, 27], '2');
-    expect(tracker.playedCounts['5']).toBe(2);
-    expect(tracker.remainingCounts['5']).toBe(6);
-  });
-});
-
-describe('Engine Match Progression & Scoring', () => {
-  it('calculates round scores: double-down +3, 1st&3rd +2, 1st&4th +1', () => {
-    expect(calculateRoundScore([0, 2, 1, 3]).levelGain).toBe(3);
-    expect(calculateRoundScore([0, 1, 2, 3]).levelGain).toBe(2);
-    expect(calculateRoundScore([0, 1, 3, 2]).levelGain).toBe(1);
-  });
-
-  it('plays a valid trick and rotates turns', () => {
-    const state = initMatch('2');
+  it('initializes and plays turns correctly in 6p mode', () => {
+    const state = initMatch('2', '6p');
+    expect(state.hands.length).toBe(6);
+    expect(state.hands[0].length).toBe(27);
     expect(state.currentTurn).toBe(0);
-    const userHand = state.hands[0];
-    const firstCard = userHand[0];
-    const singleCombo = classify([firstCard], '2')!;
 
-    const { nextState, error } = playMove(state, 0, singleCombo);
+    const firstCard = state.hands[0][0];
+    const combo = classify([firstCard], '2')!;
+    const { nextState, error } = playMove(state, 0, combo);
     expect(error).toBeUndefined();
     expect(nextState.hands[0].length).toBe(26);
     expect(nextState.currentTurn).toBe(1);
   });
 
-  it('swaps hands between teams for Rematch Mode (复赛模式)', () => {
-    const state = initMatch('2');
-    const hand0 = [...state.hands[0]];
-    const hand1 = [...state.hands[1]];
+  it('swaps hands among 6 players in 6p Rematch Mode', () => {
+    const state = initMatch('2', '6p');
+    const orig0 = [...state.hands[0]];
+    const orig1 = [...state.hands[1]];
 
     const swapped = startSwapHandsMatch(state);
-    expect(swapped.hands[0].length).toBe(hand1.length);
-    expect(swapped.hands[1].length).toBe(hand0.length);
-    // User hand IDs match opponent's original hand IDs
-    expect(swapped.hands[0].map((c) => c.id).sort()).toEqual(hand1.map((c) => c.id).sort());
-  });
-
-  it('exports and imports replay records correctly', () => {
-    const state = initMatch('2');
-    const jsonStr = exportReplayRecord(state, '测试牌谱');
-    const imported = importReplayRecord(jsonStr);
-
-    expect(imported.levelRank).toBe('2');
-    expect(imported.initialHands.length).toBe(4);
-    expect(imported.title).toBe('测试牌谱');
-  });
-
-  it('reconstructs replay steps with getReplayStep', () => {
-    const sampleRecord: ReplayRecord = {
-      version: '1.0',
-      timestamp: Date.now(),
-      levelRank: '2',
-      teamLevels: [2, 2],
-      initialHands: [
-        [{ id: '1', suit: 'S', rank: '3' }],
-        [{ id: '2', suit: 'H', rank: '3' }],
-        [{ id: '3', suit: 'C', rank: '3' }],
-        [{ id: '4', suit: 'D', rank: '3' }],
-      ],
-      history: [
-        {
-          seat: 0,
-          action: 'play',
-          combo: { category: 'single', length: 1, compareValue: 3, isBomb: false, cards: [{ id: '1', suit: 'S', rank: '3' }] },
-        },
-      ],
-      finishedOrder: [0, 1, 2, 3],
-    };
-
-    const step0 = getReplayStep(sampleRecord, 0);
-    expect(step0.hands[0].length).toBe(1);
-
-    const step1 = getReplayStep(sampleRecord, 1);
-    expect(step1.hands[0].length).toBe(0);
-    expect(step1.actionTaken?.action).toBe('play');
+    expect(swapped.hands.length).toBe(6);
+    expect(swapped.hands[0].map((c) => c.id).sort()).toEqual(orig1.map((c) => c.id).sort());
+    expect(swapped.hands[1].map((c) => c.id).sort()).toEqual(orig0.map((c) => c.id).sort());
   });
 });

@@ -21,14 +21,25 @@ export const RoundEndModal: React.FC<RoundEndModalProps> = ({
   const { finishedOrder, teamLevels, phase } = gameState;
   const isMatchEnd = phase === 'match_end';
 
-  const roundScore = calculateRoundScore(finishedOrder);
+  const mode = gameState.mode || '4p';
+  const is6p = mode === '6p';
+  const roundScore = calculateRoundScore(finishedOrder, mode);
 
-  const seatNames: Record<PlayerSeat, string> = {
-    0: '我 (南)',
-    1: '右家 (东)',
-    2: '对家·搭档 (北)',
-    3: '左家 (西)',
-  };
+  const seatNames: Record<number, string> = is6p
+    ? {
+        0: '我 (南)',
+        1: '东南 (对方1)',
+        2: '西北 (搭档1)',
+        3: '正北 (对方2)',
+        4: '东北 (搭档2)',
+        5: '西南 (对方3)',
+      }
+    : {
+        0: '我 (南)',
+        1: '右家 (东)',
+        2: '对家·搭档 (北)',
+        3: '左家 (西)',
+      };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/85 backdrop-blur-sm animate-fade-in">

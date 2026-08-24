@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Card, GameState, PlayerSeat } from '../../core/types';
+import React, { useState } from 'react';
+import { GameState, PlayerSeat } from '../../core/types';
 import { PlayingCard } from '../Card/PlayingCard';
 import { describeCombo } from '../../core/combos';
 import { choosePlan } from '../../core/optimizer';
@@ -48,12 +48,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
   const [showChecklistModal, setShowChecklistModal] = useState<boolean>(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
   const [showVoicePicker, setShowVoicePicker] = useState<boolean>(false);
-  const [activeEmojis, setActiveEmojis] = useState<Record<PlayerSeat, { emoji: string; text?: string } | null>>({
-    0: null,
-    1: null,
-    2: null,
-    3: null,
-  });
+  const [activeEmojis, setActiveEmojis] = useState<Record<number, { emoji: string; text?: string } | null>>({});
 
   const {
     hands,
@@ -64,21 +59,34 @@ export const PokerTable: React.FC<PokerTableProps> = ({
     teamLevels,
     finishedOrder,
     isGodMode,
+    mode = '4p',
   } = gameState;
 
-  const userHand = hands[0];
+  const is6p = mode === '6p';
+  const userHand = hands[0] || [];
   const isMyTurn = currentTurn === 0;
 
   // Plan groups for user hand
   const planResult = choosePlan(userHand, levelRank);
   const bestGroups = planResult.best.groups;
 
-  const seatNames: Record<PlayerSeat, string> = {
+  const seatNames4p: Record<number, string> = {
     0: '我 (南)',
     1: '右家 (东)',
     2: '对家·搭档 (北)',
     3: '左家 (西)',
   };
+
+  const seatNames6p: Record<number, string> = {
+    0: '我 (南·主队)',
+    1: '东南 (对方1)',
+    2: '西北 (搭档1)',
+    3: '正北 (对方2)',
+    4: '东北 (搭档2)',
+    5: '西南 (对方3)',
+  };
+
+  const seatNames = is6p ? seatNames6p : seatNames4p;
 
   const handleToggleSound = () => {
     const next = Sound.toggleMute();
@@ -110,9 +118,78 @@ export const PokerTable: React.FC<PokerTableProps> = ({
     setShowVoicePicker(false);
   };
 
+  // Helper to render other player avatar & played cards
+  const renderPlayerSeatNode = (seat: number) => {
+    const isTurn = currentTurn === seat;
+    const isTeammate = seat % 2 === 0;
+    const handLen = hands[seat]?.length || 0;
+    const rankIndex = finishedOrder.indexOf(seat as PlayerSeat);
+    const played = trickPlays[seat];
+    const emojiData = activeEmojis[seat];
+
+    return (
+      <div key={seat} className="flex flex-col items-center relative select-none">
+        {/* Floating Emoji Bubble */}
+        {emojiData && (
+          <div className="absolute -top-7 z-30 bg-amber-500 text-slate-950 font-black px-2 py-0.5 rounded-full shadow-2xl text-[10px] sm:text-xs animate-bounce border border-amber-300 flex items-center gap-1">
+            <span>{emojiData.emoji}</span>
+            <span>{emojiData.text}</span>
+          </div>
+        )}
+
+        {/* Seat Badge */}
+        <div
+          className={`flex items-center space-x-1 px-2 sm:px-2.5 py-0.5 rounded-full transition-all duration-300 ${
+            isTurn
+              ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-amber-400 shadow-md scale-105'
+              : isTeammate
+              ? 'bg-slate-950/85 text-emerald-300 border border-emerald-500/40 shadow'
+              : 'bg-slate-950/85 text-rose-300 border border-rose-500/40 shadow'
+          }`}
+        >
+          <span className="text-[10px] sm:text-[11px] font-bold">{seatNames[seat]}</span>
+          <span className="text-[9px] sm:text-[10px] bg-slate-900/90 text-amber-300 px-1.5 py-0.2 rounded-full font-extrabold">
+            余 {handLen}
+          </span>
+          {rankIndex !== -1 && (
+            <span className="bg-emerald-500 text-slate-950 text-[8px] sm:text-[9px] px-1 py-0.2 rounded-full font-black">
+              第{rankIndex + 1}名
+            </span>
+          )}
+        </div>
+
+        {/* God Mode: Show Face-up Cards */}
+        {isGodMode && handLen > 0 && (
+          <div className="mt-0.5 flex -space-x-5 max-w-[130px] sm:max-w-[150px] overflow-x-auto p-0.5 bg-black/40 rounded border border-amber-500/30">
+            {hands[seat].map((card) => (
+              <PlayingCard key={card.id} card={card} levelRank={levelRank} size="sm" compact />
+            ))}
+          </div>
+        )}
+
+        {/* Trick Play Slot */}
+        <div className="h-8 sm:h-9 flex items-center justify-center mt-0.5">
+          {played ? (
+            played.action === 'pass' ? (
+              <span className="text-[10px] bg-slate-900/90 text-slate-400 px-2 py-0.2 rounded-full border border-slate-700 font-bold">
+                过牌
+              </span>
+            ) : (
+              <div className="flex -space-x-5 sm:-space-x-6 drop-shadow-md animate-fade-in">
+                {played.cards?.map((card) => (
+                  <PlayingCard key={card.id} card={card} levelRank={levelRank} size="sm" />
+                ))}
+              </div>
+            )
+          ) : null}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="relative w-full h-full min-h-0 rounded-2xl sm:rounded-3xl table-felt border-4 sm:border-[6px] border-amber-950/80 shadow-2xl p-2.5 sm:p-3 flex flex-col justify-between overflow-hidden ring-1 ring-amber-600/40 select-none">
-      {/* Top Banner: Level Rank, God Mode, Team Scores & Controls */}
+    <div className="relative w-full h-full min-h-0 rounded-2xl sm:rounded-3xl table-felt border-4 sm:border-[6px] border-amber-950/80 shadow-2xl p-2 sm:p-2.5 flex flex-col justify-between overflow-hidden ring-1 ring-amber-600/40 select-none">
+      {/* Top Banner: Mode Indicator, Level Rank, God Mode, Team Scores & Controls */}
       <div className="shrink-0 flex items-center justify-between z-20">
         <div className="flex items-center space-x-1.5 sm:space-x-2">
           {/* Level Badge */}
@@ -122,6 +199,9 @@ export const PokerTable: React.FC<PokerTableProps> = ({
               <span>打【{levelRank}】</span>
               <span className="text-[10px] bg-gradient-to-r from-rose-600 to-amber-600 text-white px-1.5 py-0.2 rounded-full font-bold shadow">
                 ♥{levelRank} 逢人配
+              </span>
+              <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-bold border border-amber-500/30">
+                {is6p ? '3副牌·6人团战' : '2副牌·4人标准'}
               </span>
             </div>
           </div>
@@ -156,12 +236,12 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
           <div className="flex items-center space-x-2 bg-slate-950/85 backdrop-blur-md px-2.5 sm:px-3 py-1 rounded-full border border-slate-700/80 text-[11px] shadow">
             <div className="flex items-center space-x-1">
-              <span className="text-emerald-400 font-bold">我方:</span>
+              <span className="text-emerald-400 font-bold">{is6p ? '我方(3人):' : '我方:'}</span>
               <span className="text-white font-extrabold">{teamLevels[0]}级</span>
             </div>
             <div className="text-slate-600">|</div>
             <div className="flex items-center space-x-1">
-              <span className="text-rose-400 font-bold">对方:</span>
+              <span className="text-rose-400 font-bold">{is6p ? '对方(3人):' : '对方:'}</span>
               <span className="text-white font-extrabold">{teamLevels[1]}级</span>
             </div>
           </div>
@@ -176,192 +256,76 @@ export const PokerTable: React.FC<PokerTableProps> = ({
         </div>
       </div>
 
-      {/* North: Teammate (Seat 2) */}
-      <div className="shrink-0 flex flex-col items-center z-10 relative">
-        {/* Floating Emoji Bubble for North */}
-        {activeEmojis[2] && (
-          <div className="absolute -top-7 z-30 bg-amber-500 text-slate-950 font-black px-2.5 py-0.5 rounded-full shadow-2xl text-xs animate-bounce border border-amber-300 flex items-center gap-1">
-            <span>{activeEmojis[2].emoji}</span>
-            <span>{activeEmojis[2].text}</span>
-          </div>
-        )}
+      {/* Dynamic Table Layout: 4-Player vs 6-Player */}
+      {!is6p ? (
+        /* 4-Player Standard Layout */
+        <>
+          {/* North (Seat 2) */}
+          <div className="shrink-0 flex flex-col items-center z-10">{renderPlayerSeatNode(2)}</div>
 
-        <div
-          className={`flex items-center space-x-1.5 px-3 py-1 rounded-full transition-all duration-300 ${
-            currentTurn === 2
-              ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-amber-400 shadow-md scale-105'
-              : 'bg-slate-950/85 text-slate-200 border border-slate-700/80 shadow'
-          }`}
-        >
-          <Users className="w-3 h-3" />
-          <span className="text-[11px] font-bold">{seatNames[2]}</span>
-          <span className="text-[10px] bg-slate-900/90 text-amber-300 px-1.5 py-0.2 rounded-full font-extrabold">
-            余 {hands[2].length} 张
-          </span>
-          {finishedOrder.indexOf(2) !== -1 && (
-            <span className="bg-emerald-500 text-slate-950 text-[9px] px-1.5 py-0.2 rounded-full font-black">
-              第{finishedOrder.indexOf(2) + 1}名
-            </span>
-          )}
-        </div>
+          {/* Middle Row: West (3) + Center Trick + East (1) */}
+          <div className="flex-1 grid grid-cols-3 items-center z-10 px-1 sm:px-2 min-h-0">
+            <div className="flex flex-col items-start">{renderPlayerSeatNode(3)}</div>
 
-        {/* God Mode: Show North Face-up Cards */}
-        {isGodMode && hands[2].length > 0 && (
-          <div className="mt-1 flex -space-x-5 max-w-lg overflow-x-auto p-1 bg-black/40 rounded-lg border border-amber-500/30">
-            {hands[2].map((card) => (
-              <PlayingCard key={card.id} card={card} levelRank={levelRank} size="sm" compact />
-            ))}
-          </div>
-        )}
-
-        {/* Teammate played cards cascade */}
-        <div className="h-9 sm:h-11 flex items-center justify-center">
-          {trickPlays[2] ? (
-            trickPlays[2]?.action === 'pass' ? (
-              <span className="text-[11px] bg-slate-900/90 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700 font-bold shadow">
-                过牌
-              </span>
-            ) : (
-              <div className="flex -space-x-5 sm:-space-x-6 drop-shadow-md animate-fade-in">
-                {trickPlays[2]?.cards?.map((card) => (
-                  <PlayingCard key={card.id} card={card} levelRank={levelRank} size="sm" />
-                ))}
-              </div>
-            )
-          ) : null}
-        </div>
-      </div>
-
-      {/* Middle Row: West (Seat 3) + Center Felt Trick Area + East (Seat 1) */}
-      <div className="flex-1 grid grid-cols-3 items-center z-10 px-1 sm:px-2 min-h-0">
-        {/* West Player (Seat 3) */}
-        <div className="flex flex-col items-start space-y-1 relative">
-          {/* Floating Emoji Bubble for West */}
-          {activeEmojis[3] && (
-            <div className="absolute -top-7 left-0 z-30 bg-amber-500 text-slate-950 font-black px-2.5 py-0.5 rounded-full shadow-2xl text-xs animate-bounce border border-amber-300 flex items-center gap-1">
-              <span>{activeEmojis[3].emoji}</span>
-              <span>{activeEmojis[3].text}</span>
-            </div>
-          )}
-
-          <div
-            className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full transition-all duration-300 ${
-              currentTurn === 3
-                ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-amber-400 shadow-md scale-105'
-                : 'bg-slate-950/85 text-slate-200 border border-slate-700/80 shadow'
-            }`}
-          >
-            <span className="text-[11px] font-bold">{seatNames[3]}</span>
-            <span className="text-[10px] bg-slate-900/90 text-rose-300 px-1.5 py-0.2 rounded-full font-extrabold">
-              余 {hands[3].length} 张
-            </span>
-            {finishedOrder.indexOf(3) !== -1 && (
-              <span className="bg-emerald-500 text-slate-950 text-[9px] px-1.5 py-0.2 rounded-full font-black">
-                第{finishedOrder.indexOf(3) + 1}名
-              </span>
-            )}
-          </div>
-
-          {/* God Mode: Show West Face-up Cards */}
-          {isGodMode && hands[3].length > 0 && (
-            <div className="flex -space-x-5 max-w-[160px] overflow-x-auto p-1 bg-black/40 rounded-lg border border-amber-500/30">
-              {hands[3].map((card) => (
-                <PlayingCard key={card.id} card={card} levelRank={levelRank} size="sm" compact />
-              ))}
-            </div>
-          )}
-
-          <div className="h-9 sm:h-11 flex items-center">
-            {trickPlays[3] ? (
-              trickPlays[3]?.action === 'pass' ? (
-                <span className="text-[11px] bg-slate-900/90 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700 font-bold shadow">
-                  过牌
-                </span>
-              ) : (
-                <div className="flex -space-x-5 sm:-space-x-6 drop-shadow-md animate-fade-in">
-                  {trickPlays[3]?.cards?.map((card) => (
-                    <PlayingCard key={card.id} card={card} levelRank={levelRank} size="sm" />
-                  ))}
+            {/* Center Trick Podium */}
+            <div className="flex flex-col items-center justify-center p-2 rounded-2xl bg-black/40 border border-emerald-500/30 backdrop-blur-md min-h-[56px] shadow-xl mx-auto w-full max-w-[210px]">
+              {currentCombo ? (
+                <div className="text-center space-y-0.5 animate-fade-in">
+                  <div className="text-[10px] text-amber-300/80 font-bold uppercase tracking-wider">
+                    需压过牌型
+                  </div>
+                  <div className="text-xs sm:text-sm font-black text-amber-400 flex items-center justify-center gap-1 drop-shadow">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{describeCombo(currentCombo)}</span>
+                  </div>
                 </div>
-              )
-            ) : null}
-          </div>
-        </div>
-
-        {/* Center Trick Podium */}
-        <div className="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl bg-black/40 border border-emerald-500/30 backdrop-blur-md min-h-[60px] sm:min-h-[68px] shadow-xl mx-auto w-full max-w-[220px]">
-          {currentCombo ? (
-            <div className="text-center space-y-0.5 animate-fade-in">
-              <div className="text-[10px] text-amber-300/80 font-bold uppercase tracking-wider">
-                需压过牌型
-              </div>
-              <div className="text-xs sm:text-sm font-black text-amber-400 flex items-center justify-center gap-1 drop-shadow">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>{describeCombo(currentCombo)}</span>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center space-y-0.5">
-              <div className="text-xs font-black text-emerald-300 drop-shadow">新一墩出牌</div>
-              <div className="text-[10px] text-slate-300">任意合法牌型皆可领出</div>
-            </div>
-          )}
-        </div>
-
-        {/* East Player (Seat 1) */}
-        <div className="flex flex-col items-end space-y-1 relative">
-          {/* Floating Emoji Bubble for East */}
-          {activeEmojis[1] && (
-            <div className="absolute -top-7 right-0 z-30 bg-amber-500 text-slate-950 font-black px-2.5 py-0.5 rounded-full shadow-2xl text-xs animate-bounce border border-amber-300 flex items-center gap-1">
-              <span>{activeEmojis[1].emoji}</span>
-              <span>{activeEmojis[1].text}</span>
-            </div>
-          )}
-
-          <div
-            className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full transition-all duration-300 ${
-              currentTurn === 1
-                ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black ring-2 ring-amber-400 shadow-md scale-105'
-                : 'bg-slate-950/85 text-slate-200 border border-slate-700/80 shadow'
-            }`}
-          >
-            <span className="text-[11px] font-bold">{seatNames[1]}</span>
-            <span className="text-[10px] bg-slate-900/90 text-rose-300 px-1.5 py-0.2 rounded-full font-extrabold">
-              余 {hands[1].length} 张
-            </span>
-            {finishedOrder.indexOf(1) !== -1 && (
-              <span className="bg-emerald-500 text-slate-950 text-[9px] px-1.5 py-0.2 rounded-full font-black">
-                第{finishedOrder.indexOf(1) + 1}名
-              </span>
-            )}
-          </div>
-
-          {/* God Mode: Show East Face-up Cards */}
-          {isGodMode && hands[1].length > 0 && (
-            <div className="flex -space-x-5 max-w-[160px] overflow-x-auto p-1 bg-black/40 rounded-lg border border-amber-500/30">
-              {hands[1].map((card) => (
-                <PlayingCard key={card.id} card={card} levelRank={levelRank} size="sm" compact />
-              ))}
-            </div>
-          )}
-
-          <div className="h-9 sm:h-11 flex items-center">
-            {trickPlays[1] ? (
-              trickPlays[1]?.action === 'pass' ? (
-                <span className="text-[11px] bg-slate-900/90 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700 font-bold shadow">
-                  过牌
-                </span>
               ) : (
-                <div className="flex -space-x-5 sm:-space-x-6 drop-shadow-md animate-fade-in">
-                  {trickPlays[1]?.cards?.map((card) => (
-                    <PlayingCard key={card.id} card={card} levelRank={levelRank} size="sm" />
-                  ))}
+                <div className="text-center space-y-0.5">
+                  <div className="text-xs font-black text-emerald-300 drop-shadow">新一墩出牌</div>
+                  <div className="text-[10px] text-slate-300">任意合法牌型皆可领出</div>
                 </div>
-              )
-            ) : null}
+              )}
+            </div>
+
+            <div className="flex flex-col items-end">{renderPlayerSeatNode(1)}</div>
+          </div>
+        </>
+      ) : (
+        /* 6-Player Hexagonal 3v3 Layout */
+        <div className="flex-1 flex flex-col justify-between z-10 px-1 min-h-0">
+          {/* Top Row: Seat 2 (NW), Seat 3 (North), Seat 4 (NE) */}
+          <div className="grid grid-cols-3 items-start gap-1">
+            <div className="flex flex-col items-start">{renderPlayerSeatNode(2)}</div>
+            <div className="flex flex-col items-center">{renderPlayerSeatNode(3)}</div>
+            <div className="flex flex-col items-end">{renderPlayerSeatNode(4)}</div>
+          </div>
+
+          {/* Middle Row: Seat 5 (SW) + Center Trick + Seat 1 (SE) */}
+          <div className="grid grid-cols-3 items-center gap-1">
+            <div className="flex flex-col items-start">{renderPlayerSeatNode(5)}</div>
+
+            {/* Center Trick Podium */}
+            <div className="flex flex-col items-center justify-center p-1.5 rounded-2xl bg-black/50 border border-emerald-500/30 backdrop-blur-md min-h-[50px] shadow-xl mx-auto w-full max-w-[200px]">
+              {currentCombo ? (
+                <div className="text-center space-y-0.5 animate-fade-in">
+                  <div className="text-[9px] text-amber-300/80 font-bold uppercase">需压过</div>
+                  <div className="text-xs font-black text-amber-400 flex items-center justify-center gap-1 drop-shadow">
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    <span>{describeCombo(currentCombo)}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center space-y-0.5">
+                  <div className="text-xs font-black text-emerald-300 drop-shadow">新一墩出牌</div>
+                  <div className="text-[9px] text-slate-300">3v3 团战首发领牌</div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col items-end">{renderPlayerSeatNode(1)}</div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* User Hand Area (South: Seat 0) */}
       <div className="shrink-0 flex flex-col items-center space-y-1 z-20 relative">
@@ -390,8 +354,8 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           ) : null}
         </div>
 
-        {/* Action Buttons Toolbar & Emoji/Voice popups */}
-        <div className="flex items-center space-x-1.5 sm:space-x-2 bg-slate-950/90 backdrop-blur-md px-2.5 sm:px-3 py-1 rounded-xl border border-slate-800 shadow-md">
+        {/* Action Buttons Toolbar */}
+        <div className="flex items-center space-x-1 sm:space-x-1.5 bg-slate-950/90 backdrop-blur-md px-2.5 py-1 rounded-xl border border-slate-800 shadow-md">
           {/* Voice Banter Button */}
           <div className="relative">
             <button
