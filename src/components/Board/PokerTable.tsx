@@ -4,7 +4,7 @@ import { PlayingCard } from '../Card/PlayingCard';
 import { describeCombo } from '../../core/combos';
 import { choosePlan } from '../../core/optimizer';
 import { Sound } from '../../core/audio';
-import { Users, Crown, Sparkles, RefreshCw, Volume2, VolumeX } from 'lucide-react';
+import { Users, Crown, Sparkles, RefreshCw, Volume2, VolumeX, CheckSquare, X } from 'lucide-react';
 
 interface PokerTableProps {
   gameState: GameState;
@@ -27,6 +27,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 }) => {
   const [groupingMode, setGroupingMode] = useState<'plan' | 'rank'>('plan');
   const [isMuted, setIsMuted] = useState<boolean>(() => Sound.getIsMuted());
+  const [showChecklistModal, setShowChecklistModal] = useState<boolean>(false);
 
   const {
     hands,
@@ -73,6 +74,15 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
         {/* Center/Right: Team Levels & Sound Button */}
         <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setShowChecklistModal(true)}
+            className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 shadow transition-transform active:scale-95"
+            title="出牌前10秒检查清单"
+          >
+            <CheckSquare className="w-3 h-3 text-amber-400" />
+            <span>10秒Checklist</span>
+          </button>
+
           <div className="flex items-center space-x-2.5 bg-slate-950/85 backdrop-blur-md px-3 py-1 rounded-full border border-slate-700/80 text-[11px] shadow">
             <div className="flex items-center space-x-1">
               <span className="text-emerald-400 font-bold">我方:</span>
@@ -338,6 +348,56 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           )}
         </div>
       </div>
+
+      {/* 10-Second Pre-Move Checklist Modal */}
+      {showChecklistModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-slate-900 border-2 border-amber-500/50 rounded-2xl max-w-md w-full p-4 shadow-2xl space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div className="flex items-center space-x-2 text-amber-400 font-extrabold text-xs">
+                <CheckSquare className="w-4 h-4" />
+                <span>实战出牌前 10 秒检查清单 (Checklist)</span>
+              </div>
+              <button
+                onClick={() => setShowChecklistModal(false)}
+                className="text-slate-400 hover:text-white p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs text-slate-200">
+              <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-start gap-2">
+                <span className="font-bold text-amber-400 shrink-0">1.</span>
+                <span><strong>对门关死否？</strong>搭档领先绝不超车，顺搭档之势。</span>
+              </div>
+              <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-start gap-2">
+                <span className="font-bold text-amber-400 shrink-0">2.</span>
+                <span><strong>谁打谁收？</strong>出试探小牌，是否有大王/级牌回收牌权。</span>
+              </div>
+              <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-start gap-2">
+                <span className="font-bold text-amber-400 shrink-0">3.</span>
+                <span><strong>弱路先行？</strong>优先处理杂单小牌，大牌留后当安全门。</span>
+              </div>
+              <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-start gap-2">
+                <span className="font-bold text-amber-400 shrink-0">4.</span>
+                <span><strong>炸后有路？</strong>炸前先想炸后出什么，无路开炸是盲目。</span>
+              </div>
+              <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex items-start gap-2">
+                <span className="font-bold text-amber-400 shrink-0">5.</span>
+                <span><strong>残局封堵？</strong>下家报一不出单，报二不发对，报五防顺子。</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowChecklistModal(false)}
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-2 rounded-xl text-xs shadow transition-transform active:scale-95"
+            >
+              已检查完毕，继续出牌
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
