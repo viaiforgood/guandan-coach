@@ -1,0 +1,179 @@
+import React, { useState } from 'react';
+import { Card, LevelRank } from '../core/types';
+import { choosePlan } from '../core/optimizer';
+import { PlayingCard } from '../components/Card/PlayingCard';
+import { Camera, Sparkles, Wand2, Lightbulb, CheckCircle2 } from 'lucide-react';
+
+export const HandOCRView: React.FC = () => {
+  const [levelRank, setLevelRank] = useState<LevelRank>('2');
+  const [inputText, setInputText] = useState<string>(
+    'H2 S3 S4 S5 S6 S7 BJ SJ S9 H9 C9 D9 S10 H10 C10 SA HA CA'
+  );
+  const [parsedCards, setParsedCards] = useState<Card[]>([]);
+  const [analysisResult, setAnalysisResult] = useState<ReturnType<typeof choosePlan> | null>(null);
+
+  const handleParseAndAnalyze = () => {
+    const tokens = inputText.trim().split(/[\s,，]+/);
+    const cards: Card[] = [];
+    let idCounter = 0;
+
+    for (const token of tokens) {
+      if (!token) continue;
+      const upper = token.toUpperCase();
+
+      if (upper === 'BJ' || upper === '大王') {
+        cards.push({ id: `ocr_${idCounter++}`, suit: 'H', rank: 'BJ' });
+      } else if (upper === 'SJ' || upper === '小王') {
+        cards.push({ id: `ocr_${idCounter++}`, suit: 'S', rank: 'SJ' });
+      } else {
+        // e.g. H2, S10, C9, D4, etc.
+        const suitChar = upper[0];
+        const rankStr = upper.slice(1);
+        const validSuits = ['S', 'H', 'C', 'D'];
+        const validRanks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+        if (validSuits.includes(suitChar) && validRanks.includes(rankStr)) {
+          cards.push({
+            id: `ocr_${idCounter++}`,
+            suit: suitChar as any,
+            rank: rankStr as any,
+          });
+        }
+      }
+    }
+
+    setParsedCards(cards);
+    if (cards.length > 0) {
+      const plan = choosePlan(cards, levelRank);
+      setAnalysisResult(plan);
+    } else {
+      setAnalysisResult(null);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-900 border border-amber-500/30 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center space-x-2 text-amber-400 font-extrabold text-sm mb-1">
+            <Camera className="w-4 h-4" />
+            <span>智能识牌与手牌结构诊断</span>
+          </div>
+          <h1 className="text-2xl font-black text-white">手牌导入与一键理牌诊断</h1>
+          <p className="text-sm text-slate-300 mt-1">
+            输入手牌符号或自然语言，AI 自动完成理牌规划（保炸优先 vs 去单化）并分析回手弱路。
+          </p>
+        </div>
+      </div>
+
+      {/* Input Form */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <label className="text-xs font-bold text-slate-300">
+            输入手牌编码（支持标准简写，如 H2 S3 BJ SJ S9 H9 C9 D9）：
+          </label>
+          <div className="flex items-center space-x-2 text-xs">
+            <span className="text-slate-400">当前打几：</span>
+            <select
+              value={levelRank}
+              onChange={(e) => setLevelRank(e.target.value as LevelRank)}
+              className="bg-slate-800 border border-slate-700 text-amber-400 font-bold px-2.5 py-1 rounded-lg"
+            >
+              {['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'].map((r) => (
+                <option key={r} value={r}>
+                  打 {r} (♥{r}逢人配)
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <textarea
+          rows={3}
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs sm:text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+          placeholder="例如: H2 S3 S4 S5 S6 S7 BJ SJ S9 H9 C9 D9 S10 H10 C10 SA HA CA"
+        />
+
+        <div className="flex items-center justify-between pt-1">
+          <div className="text-[11px] text-slate-400">
+            花色: S=黑桃, H=红桃, C=梅花, D=方块 | 王牌: BJ=大王, SJ=小王
+          </div>
+
+          <button
+            onClick={handleParseAndAnalyze}
+            className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs sm:text-sm px-6 py-2.5 rounded-xl shadow-lg flex items-center space-x-2 transition-transform active:scale-95"
+          >
+            <Wand2 className="w-4 h-4" />
+            <span>智能推演理牌</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Analysis Result */}
+      {analysisResult && (
+        <div className="bg-slate-900 border border-emerald-500/30 rounded-2xl p-6 shadow-xl space-y-5 animate-fade-in">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 className="text-lg font-black text-white flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-400" />
+              <span>理牌方案与结构评估 (共识别 {parsedCards.length} 张牌)</span>
+            </h3>
+            <span className="text-xs bg-emerald-500/20 text-emerald-300 font-bold px-3 py-1 rounded-full border border-emerald-500/30">
+              推荐方案：{analysisResult.best.name}
+            </span>
+          </div>
+
+          {/* Rationale */}
+          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs sm:text-sm text-slate-200 leading-relaxed flex items-start space-x-2">
+            <Lightbulb className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+            <div>{analysisResult.explanation}</div>
+          </div>
+
+          {/* Hand Groups Render */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-slate-400">最佳牌型分组拆解：</span>
+            <div className="flex flex-wrap gap-3">
+              {analysisResult.best.groups.map((group, idx) => (
+                <div
+                  key={idx}
+                  className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex flex-col items-center space-y-2"
+                >
+                  <span className="text-[11px] font-bold text-amber-400">{group.label || group.category}</span>
+                  <div className="flex -space-x-4">
+                    {group.cards.map((c) => (
+                      <PlayingCard key={c.id} card={c} levelRank={levelRank} size="sm" />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Stats Bar */}
+          <div className="grid grid-cols-3 gap-3 text-center text-xs">
+            <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+              <span className="text-slate-400 block text-[11px]">持有炸弹</span>
+              <span className="font-extrabold text-amber-400 text-base">
+                {analysisResult.best.details.bombCount} 个
+              </span>
+            </div>
+            <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+              <span className="text-slate-400 block text-[11px]">死牌单张 (&lt;J)</span>
+              <span className="font-extrabold text-rose-400 text-base">
+                {analysisResult.best.details.deadCardCount} 张
+              </span>
+            </div>
+            <div className="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+              <span className="text-slate-400 block text-[11px]">手牌流畅评分</span>
+              <span className="font-extrabold text-emerald-400 text-base">
+                {analysisResult.best.score} 分
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
