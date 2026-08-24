@@ -1,6 +1,7 @@
 # 🃏 掼蛋大师教练 (Guandan Pro Coach)
 
 > 以《道德经》观势，以规则为边界，以技术为手段，以战略为方向，以决策赢得牌局。  
+> 🎮 **在线畅玩与特训**：[https://guandan.weiai.ai](https://guandan.weiai.ai) (备用：[https://aiguandan.pages.dev](https://aiguandan.pages.dev))  
 > 一个面向初学者与资深高手的专业 AI 掼蛋教学、记牌算牌（五十定律）、残局闯关与智能对战复盘平台。
 
 ---
