@@ -378,15 +378,16 @@ const AppContent: React.FC = () => {
                 <p className="text-[11px] text-slate-400">{t.aboutInst3Desc}</p>
               </div>
 
-              {/* Special Credits: 中山大学校友会 & 慧姐 */}
+              {/* Special Credits: 中山大学校友会 & 蒋主席 & 慧姐 */}
               <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
                 <div className="flex items-center space-x-1.5 text-amber-300 font-bold">
                   <BookOpen className="w-4 h-4 text-amber-400" />
                   <span>经典宝典与名宿实战经验致谢</span>
                 </div>
                 <ul className="text-[11px] text-slate-400 space-y-0.5 list-disc list-inside">
-                  <li><strong>广州市中山大学校友会</strong>：传承收录《掼蛋宝典》（18条黄金实战口诀）</li>
-                  <li><strong>慧姐</strong>：口述实录《实战牌语与攻防心法》（首发小单、对子探路、牌语读人）</li>
+                  <li><strong>广州市中山大学校友会</strong>：传承收录《掼蛋宝典》（18条黄金实战口诀原件与精解）</li>
+                  <li><strong>蒋主席</strong>：口述实录《掼蛋实战宝典与博弈心法》（残局逆向预设、困死孤张、配角拯救大兵、50%过牌法则）</li>
+                  <li><strong>慧姐</strong>：口述实录《实战牌语与攻防心法》（首发小单强牌、对子探路、多炸主攻单炸僚机）</li>
                 </ul>
               </div>
 

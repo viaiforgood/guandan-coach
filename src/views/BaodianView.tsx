@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { BAODIAN_RULES, BaodianRule, HUIJIE_INSIGHTS, HuijieInsight } from '../core/baodian';
+import {
+  BAODIAN_RULES,
+  BaodianRule,
+  HUIJIE_INSIGHTS,
+  HuijieInsight,
+  JIANG_INSIGHTS,
+  JiangInsight,
+} from '../core/baodian';
 import { useI18n } from '../core/i18n';
 import {
   BookOpen,
@@ -17,14 +24,17 @@ import {
   MessageSquareQuote,
   GraduationCap,
   HeartHandshake,
+  Crown,
+  Zap,
 } from 'lucide-react';
 
 export const BaodianView: React.FC = () => {
   const { t } = useI18n();
-  const [mainTab, setMainTab] = useState<'rules' | 'huijie'>('rules');
+  const [mainTab, setMainTab] = useState<'rules' | 'jiang' | 'huijie'>('rules');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [copiedJiangId, setCopiedJiangId] = useState<number | null>(null);
   const [copiedHuijieId, setCopiedHuijieId] = useState<number | null>(null);
   const [activeImagePreview, setActiveImagePreview] = useState<{ url: string; title: string; source: string } | null>(null);
 
@@ -47,11 +57,38 @@ export const BaodianView: React.FC = () => {
     return matchCategory && matchQuery;
   });
 
+  const filteredJiangInsights = JIANG_INSIGHTS.filter((item) => {
+    return (
+      searchQuery === '' ||
+      item.title.includes(searchQuery) ||
+      item.quote.includes(searchQuery) ||
+      item.coreRule.includes(searchQuery) ||
+      item.application.includes(searchQuery)
+    );
+  });
+
+  const filteredHuijieInsights = HUIJIE_INSIGHTS.filter((item) => {
+    return (
+      searchQuery === '' ||
+      item.title.includes(searchQuery) ||
+      item.quote.includes(searchQuery) ||
+      item.coreRule.includes(searchQuery) ||
+      item.application.includes(searchQuery)
+    );
+  });
+
   const handleCopyRule = (rule: BaodianRule) => {
     const text = `【广州市中山大学校友会 · 掼蛋宝典第${rule.id}条】${rule.phrase}\n💡 战术精解：${rule.explanation}\n🎯 实战动作：${rule.tacticalAction}\n⚠️ 禁忌误区：${rule.pitfall}\n🏛️ 来源致谢：广州市中山大学校友会\n👉 掼蛋大师教练 (https://guandan.weiai.ai)`;
     navigator.clipboard.writeText(text);
     setCopiedId(rule.id);
     setTimeout(() => setCopiedId(null), 2500);
+  };
+
+  const handleCopyJiang = (item: JiangInsight) => {
+    const text = `【蒋主席掼蛋实战宝典 · ${item.title}】\n💬 语音实录：${item.quote}\n🎯 核心法则：${item.coreRule}\n💡 实战应用：${item.application}\n👑 经验贡献：蒋主席\n👉 掼蛋大师教练 (https://guandan.weiai.ai)`;
+    navigator.clipboard.writeText(text);
+    setCopiedJiangId(item.id);
+    setTimeout(() => setCopiedJiangId(null), 2500);
   };
 
   const handleCopyHuijie = (item: HuijieInsight) => {
@@ -70,47 +107,63 @@ export const BaodianView: React.FC = () => {
             📖
           </div>
           <div>
-            <div className="flex items-center space-x-2 flex-wrap">
+            <div className="flex items-center space-x-2 flex-wrap gap-y-1">
               <h2 className="text-base sm:text-lg font-black text-white">掼蛋实战宝典库</h2>
               <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-500/40 flex items-center gap-1">
                 <GraduationCap className="w-3 h-3 text-emerald-400" />
-                <span>广州市中山大学校友会 授权收录</span>
+                <span>中大校友会 18条经典口诀</span>
+              </span>
+              <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold border border-amber-500/40 flex items-center gap-1">
+                <Crown className="w-3 h-3 text-amber-400" />
+                <span>蒋主席 博弈与残局心法</span>
               </span>
               <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold border border-rose-500/40 flex items-center gap-1">
                 <HeartHandshake className="w-3 h-3 text-rose-400" />
-                <span>慧姐 牌语心法实录</span>
+                <span>慧姐 牌语攻防实录</span>
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              致谢名宿与校友会传承：严谨传承中山大学校友会 18 条经典口诀，融合慧姐实战牌语传递洞察。
+              致谢名宿与校友会传承：收录中山大学校友会 18 条经典口诀、蒋主席博弈残局心法及慧姐实战牌语实录。
             </p>
           </div>
         </div>
 
-        {/* Sub-Navigation Tabs: 18条经典口诀 vs 慧姐心法 */}
+        {/* Sub-Navigation Tabs: 中大宝典 vs 蒋主席宝典 vs 慧姐心法 */}
         <div className="flex items-center space-x-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0">
           <button
             onClick={() => setMainTab('rules')}
-            className={`px-3 py-1 rounded-lg text-xs font-black flex items-center space-x-1.5 transition-all ${
+            className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-black flex items-center space-x-1.5 transition-all ${
               mainTab === 'rules'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
+                ? 'bg-emerald-500 text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
             <GraduationCap className="w-3.5 h-3.5" />
-            <span>广州市中大校友会宝典</span>
+            <span>中大校友会宝典</span>
+          </button>
+
+          <button
+            onClick={() => setMainTab('jiang')}
+            className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-black flex items-center space-x-1.5 transition-all ${
+              mainTab === 'jiang'
+                ? 'bg-amber-500 text-slate-950 shadow-md'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Crown className="w-3.5 h-3.5" />
+            <span>蒋主席宝典 (7条心法)</span>
           </button>
 
           <button
             onClick={() => setMainTab('huijie')}
-            className={`px-3 py-1 rounded-lg text-xs font-black flex items-center space-x-1.5 transition-all ${
+            className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-black flex items-center space-x-1.5 transition-all ${
               mainTab === 'huijie'
                 ? 'bg-gradient-to-r from-rose-500 to-amber-500 text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>慧姐实战牌语心法</span>
+            <span>慧姐牌语心法</span>
           </button>
         </div>
       </div>
@@ -131,7 +184,7 @@ export const BaodianView: React.FC = () => {
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`px-2.5 py-1 rounded-lg text-xs font-extrabold flex items-center space-x-1 whitespace-nowrap transition-all ${
                       isSelected
-                        ? 'bg-amber-500 text-slate-950 shadow-md'
+                        ? 'bg-emerald-500 text-slate-950 shadow-md'
                         : 'bg-slate-900 text-slate-300 hover:text-white border border-slate-800'
                     }`}
                   >
@@ -177,12 +230,12 @@ export const BaodianView: React.FC = () => {
               {filteredRules.map((rule) => (
                 <div
                   key={rule.id}
-                  className="bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-2xl p-4 shadow-lg flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 space-y-3 group"
+                  className="bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-4 shadow-lg flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 space-y-3 group"
                 >
                   {/* Header: Rule ID, Category & Source Credit */}
                   <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
                     <div className="flex items-center space-x-2">
-                      <span className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 font-black text-xs flex items-center justify-center">
+                      <span className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-black text-xs flex items-center justify-center">
                         {rule.id}
                       </span>
                       <span className="text-[11px] font-bold text-slate-400 bg-slate-950 px-2 py-0.5 rounded-full border border-slate-800">
@@ -192,7 +245,7 @@ export const BaodianView: React.FC = () => {
 
                     <button
                       onClick={() => handleCopyRule(rule)}
-                      className="text-slate-400 hover:text-amber-400 p-1 transition-transform active:scale-90"
+                      className="text-slate-400 hover:text-emerald-400 p-1 transition-transform active:scale-90"
                       title="复制口诀与精解"
                     >
                       {copiedId === rule.id ? (
@@ -203,36 +256,42 @@ export const BaodianView: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* Phrase Banner */}
-                  <div>
-                    <h3 className="text-sm sm:text-base font-black text-amber-300 leading-snug group-hover:text-amber-200">
-                      {rule.phrase}
-                    </h3>
+                  {/* Core Rhyme Phrase */}
+                  <div className="text-sm sm:text-base font-black text-white group-hover:text-emerald-300 transition-colors leading-snug">
+                    {rule.phrase}
                   </div>
 
-                  {/* Explanation & Tactical Action */}
-                  <div className="space-y-2 text-xs leading-relaxed text-slate-300 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
-                    <div>
-                      <span className="text-amber-400 font-bold">💡 战术精解：</span>
-                      <span className="text-slate-300">{rule.explanation}</span>
+                  {/* Tactical Explanation */}
+                  <div className="space-y-2 text-xs">
+                    <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80 space-y-1">
+                      <div className="flex items-center space-x-1.5 text-slate-300 font-extrabold text-[11px]">
+                        <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>博弈论战术精解</span>
+                      </div>
+                      <p className="text-slate-400 leading-relaxed">{rule.explanation}</p>
                     </div>
-                    <div>
-                      <span className="text-emerald-400 font-bold">🎯 实战动作：</span>
-                      <span className="text-emerald-300/90">{rule.tacticalAction}</span>
+
+                    <div className="bg-emerald-950/30 p-2.5 rounded-xl border border-emerald-500/20 space-y-1">
+                      <div className="flex items-center space-x-1.5 text-emerald-300 font-extrabold text-[11px]">
+                        <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>实战动作要领</span>
+                      </div>
+                      <p className="text-emerald-200/90 leading-relaxed">{rule.tacticalAction}</p>
                     </div>
-                    <div>
-                      <span className="text-rose-400 font-bold">⚠️ 禁忌误区：</span>
-                      <span className="text-rose-300/80">{rule.pitfall}</span>
+
+                    <div className="bg-rose-950/20 p-2.5 rounded-xl border border-rose-500/20 space-y-1">
+                      <div className="flex items-center space-x-1.5 text-rose-300 font-extrabold text-[11px]">
+                        <Shield className="w-3.5 h-3.5 text-rose-400" />
+                        <span>禁忌与新手误区</span>
+                      </div>
+                      <p className="text-rose-200/90 leading-relaxed">{rule.pitfall}</p>
                     </div>
                   </div>
 
-                  {/* Institutional Credit Footer */}
-                  <div className="text-[10px] text-slate-500 border-t border-slate-800/60 pt-1.5 flex items-center justify-between">
-                    <span className="flex items-center gap-1">
-                      <GraduationCap className="w-3 h-3 text-emerald-500" />
-                      <span>广州市中山大学校友会</span>
-                    </span>
-                    <span className="text-slate-600">GuanDan BaoDian</span>
+                  {/* Footer Attribution */}
+                  <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[10px] text-slate-500">
+                    <span>来源：广州市中山大学校友会</span>
+                    <span className="text-emerald-400/80">掼蛋大师教练</span>
                   </div>
                 </div>
               ))}
@@ -241,64 +300,139 @@ export const BaodianView: React.FC = () => {
         </div>
       )}
 
-      {/* Main Tab 2: 慧姐实战牌语心法 (Huijie's Battle Insights) */}
-      {mainTab === 'huijie' && (
+      {/* Main Tab 2: 蒋主席 · 掼蛋实战宝典与博弈心法 (7条口述实录) */}
+      {mainTab === 'jiang' && (
         <div className="flex-1 min-h-0 flex flex-col gap-2.5 overflow-hidden">
-          {/* Audio Screenshot Proofs Trigger Bar */}
-          <div className="shrink-0 bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-            <div className="flex items-center space-x-2 text-xs">
-              <MessageSquareQuote className="w-4 h-4 text-amber-400" />
-              <span className="font-bold text-rose-300">慧姐金句：</span>
-              <span className="text-slate-300">“牌语是看打牌打出来的，而不是眨眼睛送秋波。”</span>
+          {/* Jiang Insights Top Notice */}
+          <div className="shrink-0 bg-slate-950/80 p-3 rounded-xl border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="flex items-center space-x-2">
+              <Crown className="w-4 h-4 text-amber-400 shrink-0" />
+              <p className="text-xs text-slate-300">
+                <strong>蒋主席口述博弈精解</strong>：“打牌你永远把自己当作配角，好的牌去助攻对家，把对家送走自己收拾残局才是真正的高手；残局要靠逆向预设全场牌型才能绝境翻盘！”
+              </p>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() =>
-                  setActiveImagePreview({
-                    url: '/assets/baodian/huijie_baodian_1.png',
-                    title: '慧姐实战心得原图（一）：首发牌语与对手意图',
-                    source: '慧姐 牌语实录分享',
-                  })
-                }
-                className="bg-slate-900 hover:bg-slate-850 text-slate-300 hover:text-amber-300 text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 flex items-center space-x-1 transition-transform active:scale-95"
-              >
-                <ImageIcon className="w-3 h-3 text-amber-400" />
-                <span>慧姐手稿截屏 1</span>
-              </button>
+            <div className="relative w-full sm:w-64 shrink-0">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="搜索蒋主席心法..."
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+              />
+            </div>
+          </div>
 
-              <button
-                onClick={() =>
-                  setActiveImagePreview({
-                    url: '/assets/baodian/huijie_baodian_2.png',
-                    title: '慧姐实战心得原图（二）：强弱定位与助攻控场',
-                    source: '慧姐 牌语实录分享',
-                  })
-                }
-                className="bg-slate-900 hover:bg-slate-850 text-slate-300 hover:text-amber-300 text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 flex items-center space-x-1 transition-transform active:scale-95"
-              >
-                <ImageIcon className="w-3 h-3 text-amber-400" />
-                <span>慧姐手稿截屏 2</span>
-              </button>
+          {/* Jiang Insights Cards Grid */}
+          <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-3">
+              {filteredJiangInsights.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-2xl p-4 shadow-lg flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 space-y-3 group"
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 font-black text-xs flex items-center justify-center">
+                        {item.id}
+                      </span>
+                      <span className="text-xs font-black text-amber-300">{item.title}</span>
+                    </div>
+
+                    <button
+                      onClick={() => handleCopyJiang(item)}
+                      className="text-slate-400 hover:text-amber-400 p-1 transition-transform active:scale-90"
+                      title="复制蒋主席心法"
+                    >
+                      {copiedJiangId === item.id ? (
+                        <Check className="w-4 h-4 text-emerald-400" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Audio Transcript Quote Box */}
+                  <div className="bg-slate-950 p-3 rounded-xl border border-amber-500/20 space-y-1 relative">
+                    <MessageSquareQuote className="w-4 h-4 text-amber-400 absolute right-2.5 top-2.5 opacity-40" />
+                    <div className="text-[11px] font-bold text-amber-300">【蒋主席口述原声录音】</div>
+                    <p className="text-xs text-slate-300 italic leading-relaxed">{item.quote}</p>
+                  </div>
+
+                  {/* Core Rule & Practical Application */}
+                  <div className="space-y-2 text-xs">
+                    <div className="bg-amber-950/30 p-2.5 rounded-xl border border-amber-500/30 space-y-1">
+                      <div className="text-[11px] font-extrabold text-amber-300 flex items-center gap-1">
+                        <Crown className="w-3 h-3 text-amber-400" />
+                        <span>核心博弈定律</span>
+                      </div>
+                      <p className="text-amber-200/90 leading-relaxed font-bold">{item.coreRule}</p>
+                    </div>
+
+                    <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80 space-y-1">
+                      <div className="text-[11px] font-extrabold text-slate-300">实战情境判定</div>
+                      <p className="text-slate-400 leading-relaxed">{item.scenario}</p>
+                    </div>
+
+                    <div className="bg-sky-950/20 p-2.5 rounded-xl border border-sky-500/20 space-y-1">
+                      <div className="text-[11px] font-extrabold text-sky-300">操盘对策与要领</div>
+                      <p className="text-sky-200/90 leading-relaxed">{item.application}</p>
+                    </div>
+                  </div>
+
+                  {/* Footer Attribution */}
+                  <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[10px] text-slate-500">
+                    <span>口述经验贡献：蒋主席</span>
+                    <span className="text-amber-400/80">掼蛋大师教练</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Tab 3: 慧姐 · 实战牌语与攻防心法 (4篇口述实录) */}
+      {mainTab === 'huijie' && (
+        <div className="flex-1 min-h-0 flex flex-col gap-2.5 overflow-hidden">
+          {/* Huijie Insights Top Notice */}
+          <div className="shrink-0 bg-slate-950/80 p-3 rounded-xl border border-rose-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="flex items-center space-x-2">
+              <MessageSquareQuote className="w-4 h-4 text-rose-400 shrink-0" />
+              <p className="text-xs text-slate-300">
+                <strong>慧姐经验精髓</strong>：“牌语是打出来的，不是眨眼睛送秋波！首发小单是主攻强牌信号；情况不明对子先行；多炸主攻，单炸安心当僚机！”
+              </p>
+            </div>
+
+            <div className="relative w-full sm:w-64 shrink-0">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="搜索慧姐心法..."
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+              />
             </div>
           </div>
 
           {/* Huijie Insights Cards Grid */}
           <div className="flex-1 min-h-0 overflow-y-auto pr-1">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-3">
-              {HUIJIE_INSIGHTS.map((item) => (
+              {filteredHuijieInsights.map((item) => (
                 <div
                   key={item.id}
                   className="bg-slate-900/90 border border-slate-800 hover:border-rose-500/50 rounded-2xl p-4 shadow-lg flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 space-y-3 group"
                 >
+                  {/* Header */}
                   <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
                     <div className="flex items-center space-x-2">
                       <span className="w-6 h-6 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400 font-black text-xs flex items-center justify-center">
                         {item.id}
                       </span>
-                      <h3 className="text-sm sm:text-base font-black text-amber-300 group-hover:text-amber-200">
-                        {item.title}
-                      </h3>
+                      <span className="text-xs font-black text-rose-300">{item.title}</span>
                     </div>
 
                     <button
@@ -314,40 +448,35 @@ export const BaodianView: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* Audio Quote */}
-                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80 space-y-1">
-                    <div className="text-[10px] text-rose-400 font-bold flex items-center gap-1">
-                      <MessageSquareQuote className="w-3 h-3 text-rose-400" />
-                      <span>慧姐语音实录原声：</span>
-                    </div>
-                    <p className="text-xs text-slate-200 italic font-serif leading-relaxed">
-                      {item.quote}
-                    </p>
+                  {/* Audio Transcript Quote Box */}
+                  <div className="bg-slate-950 p-3 rounded-xl border border-rose-500/20 space-y-1 relative">
+                    <MessageSquareQuote className="w-4 h-4 text-rose-400 absolute right-2.5 top-2.5 opacity-40" />
+                    <div className="text-[11px] font-bold text-rose-300">【慧姐口述原声录音】</div>
+                    <p className="text-xs text-slate-300 italic leading-relaxed">{item.quote}</p>
                   </div>
 
-                  {/* Core Rule & Application */}
-                  <div className="space-y-2 text-xs leading-relaxed text-slate-300 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
-                    <div>
-                      <span className="text-amber-400 font-bold">🎯 核心法则：</span>
-                      <span className="text-slate-300">{item.coreRule}</span>
+                  {/* Core Rule & Practical Application */}
+                  <div className="space-y-2 text-xs">
+                    <div className="bg-rose-950/30 p-2.5 rounded-xl border border-rose-500/30 space-y-1">
+                      <div className="text-[11px] font-extrabold text-rose-300">核心战术法则</div>
+                      <p className="text-rose-200/90 leading-relaxed font-bold">{item.coreRule}</p>
                     </div>
-                    <div>
-                      <span className="text-sky-400 font-bold">🔍 触发场景：</span>
-                      <span className="text-slate-300">{item.scenario}</span>
+
+                    <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80 space-y-1">
+                      <div className="text-[11px] font-extrabold text-slate-300">实战情境判定</div>
+                      <p className="text-slate-400 leading-relaxed">{item.scenario}</p>
                     </div>
-                    <div>
-                      <span className="text-emerald-400 font-bold">⚡ 实战打法：</span>
-                      <span className="text-emerald-300/90">{item.application}</span>
+
+                    <div className="bg-sky-950/20 p-2.5 rounded-xl border border-sky-500/20 space-y-1">
+                      <div className="text-[11px] font-extrabold text-sky-300">操盘对策与要领</div>
+                      <p className="text-sky-200/90 leading-relaxed">{item.application}</p>
                     </div>
                   </div>
 
-                  {/* Personal Credit Footer */}
-                  <div className="text-[10px] text-slate-500 border-t border-slate-800/60 pt-1.5 flex items-center justify-between">
-                    <span className="flex items-center gap-1">
-                      <HeartHandshake className="w-3 h-3 text-rose-400" />
-                      <span>实战经验提供：慧姐</span>
-                    </span>
-                    <span className="text-slate-600">Huijie Battle Insights</span>
+                  {/* Footer Attribution */}
+                  <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[10px] text-slate-500">
+                    <span>口述经验贡献：慧姐</span>
+                    <span className="text-rose-400/80">掼蛋大师教练</span>
                   </div>
                 </div>
               ))}
@@ -356,14 +485,17 @@ export const BaodianView: React.FC = () => {
         </div>
       )}
 
-      {/* Modal: View Original Scanned Image / Screenshots */}
+      {/* Modal: Original Baodian Card High-Res Image Preview */}
       {activeImagePreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/90 backdrop-blur-md animate-fade-in">
-          <div className="bg-slate-900 border-2 border-amber-500/50 rounded-3xl max-w-2xl w-full p-4 shadow-2xl space-y-3 flex flex-col max-h-[92vh]">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2 shrink-0">
-              <div>
-                <h3 className="text-sm font-black text-white">{activeImagePreview.title}</h3>
-                <p className="text-[10px] text-amber-400 font-bold mt-0.5">致谢：{activeImagePreview.source}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl space-y-3 relative max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div className="flex items-center space-x-2">
+                <GraduationCap className="w-5 h-5 text-emerald-400" />
+                <div>
+                  <h3 className="text-sm font-black text-white">{activeImagePreview.title}</h3>
+                  <p className="text-[11px] text-emerald-400 font-bold">{activeImagePreview.source}</p>
+                </div>
               </div>
               <button
                 onClick={() => setActiveImagePreview(null)}
@@ -373,23 +505,22 @@ export const BaodianView: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex-1 overflow-auto rounded-xl border border-slate-800 flex items-center justify-center bg-black/50 p-2 min-h-0">
+            <div className="flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-950 p-2 border border-slate-800 flex items-center justify-center">
               <img
                 src={activeImagePreview.url}
                 alt={activeImagePreview.title}
-                className="max-h-full max-w-full object-contain rounded-lg shadow-2xl"
+                className="max-h-[65vh] w-auto object-contain rounded-lg shadow-lg"
               />
             </div>
 
-            <div className="flex items-center justify-between shrink-0 pt-1">
-              <span className="text-[11px] text-slate-400">传承名宿实战真言，严谨保留版权致谢。</span>
-              <a
-                href={activeImagePreview.url}
-                download
-                className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs px-3 py-1.5 rounded-xl shadow flex items-center space-x-1"
+            <div className="text-[11px] text-slate-400 flex items-center justify-between">
+              <span>广州市中山大学校友会 官方致谢印制</span>
+              <button
+                onClick={() => setActiveImagePreview(null)}
+                className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-4 py-1 rounded-lg text-xs"
               >
-                <span>保存原图</span>
-              </a>
+                关闭预览
+              </button>
             </div>
           </div>
         </div>
