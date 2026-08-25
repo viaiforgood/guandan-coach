@@ -85,30 +85,31 @@ guandan-app/
 ## 🚀 快速上手与本地开发 (Quickstart)
 
 ```bash
-# 1. 克隆仓库
-git clone https://github.com/viaiforgood/guandan-app.git
-cd guandan-app
+# 克隆公开代码仓库
+git clone https://github.com/viaiforgood/guandan-coach.git
+cd guandan-coach
 
-# 2. 安装依赖
+# 安装依赖
 npm install
 
-# 3. 启动本地开发服务器
+# 启动本地极速开发热重载服务器
 npm run dev
 
-# 4. 运行单元测试 (100% 通过)
+# 运行单元测试
 npm test
 
-# 5. 构建生产包
+# 构建生产版本
 npm run build
 ```
 
 ---
 
-## ☁️ 部署指南 (Deployment)
+## 🌐 云端部署 (Deployment)
 
-### Cloudflare Pages 自动化部署
-1. 进入 [Cloudflare Dashboard](https://dash.cloudflare.com/) -> **Workers & Pages** -> **Create application** -> **Pages**。
-2. 关联 GitHub 仓库 `viaiforgood/guandan-app`。
+本项目专为 **Cloudflare Pages / Vercel** 边缘网络优化：
+
+1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/) -> **Compute (Workers & Pages)** -> **Pages**。
+2. 关联 GitHub 公开仓库 `viaiforgood/guandan-coach`。
 3. 配置构建参数：
    - **Framework preset**: `Vite`
    - **Build command**: `npm run build`

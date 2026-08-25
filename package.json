@@ -15,10 +15,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/viaiforgood/guandan-app.git"
+    "url": "git+https://github.com/viaiforgood/guandan-coach.git"
   },
   "bugs": {
-    "url": "https://github.com/viaiforgood/guandan-app/issues"
+    "url": "https://github.com/viaiforgood/guandan-coach/issues"
   },
   "keywords": [
     "guandan",
