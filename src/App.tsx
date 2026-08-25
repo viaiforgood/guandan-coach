@@ -386,8 +386,8 @@ const AppContent: React.FC = () => {
                 </div>
                 <ul className="text-[11px] text-slate-400 space-y-0.5 list-disc list-inside">
                   <li><strong>广州市中山大学校友会</strong>：传承收录《掼蛋宝典》（18条黄金实战口诀原件与精解）</li>
-                  <li><strong>蒋主席</strong>：口述实录《掼蛋实战宝典与博弈心法》（残局逆向预设、困死孤张、配角拯救大兵、50%过牌法则）</li>
-                  <li><strong>慧姐</strong>：口述实录《实战牌语与攻防心法》（首发小单强牌、对子探路、多炸主攻单炸僚机）</li>
+                  <li><strong>蒋主席</strong>（北美高校联盟掼蛋俱乐部名誉主席）：口述实录《掼蛋实战宝典与博弈心法》（残局逆向预设、困死孤张、配角拯救大兵、50%过牌法则）</li>
+                  <li><strong>慧姐</strong>（北美高校联盟北加硅谷名宿）：口述实录《实战牌语与攻防心法》（首发小单强牌、对子探路、多炸主攻单炸僚机）</li>
                 </ul>
               </div>
 

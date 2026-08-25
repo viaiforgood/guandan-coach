@@ -26,6 +26,7 @@ import {
   HeartHandshake,
   Crown,
   Zap,
+  Award,
 } from 'lucide-react';
 
 export const BaodianView: React.FC = () => {
@@ -85,14 +86,14 @@ export const BaodianView: React.FC = () => {
   };
 
   const handleCopyJiang = (item: JiangInsight) => {
-    const text = `【蒋主席掼蛋实战宝典 · ${item.title}】\n💬 语音实录：${item.quote}\n🎯 核心法则：${item.coreRule}\n💡 实战应用：${item.application}\n👑 经验贡献：蒋主席\n👉 掼蛋大师教练 (https://guandan.weiai.ai)`;
+    const text = `【蒋主席掼蛋实战宝典 · ${item.title}】\n🎯 核心法则：${item.coreRule}\n💡 实战应用：${item.application}\n👑 经验贡献：蒋主席（北美高校联盟掼蛋俱乐部名誉主席）\n👉 掼蛋大师教练 (https://guandan.weiai.ai)`;
     navigator.clipboard.writeText(text);
     setCopiedJiangId(item.id);
     setTimeout(() => setCopiedJiangId(null), 2500);
   };
 
   const handleCopyHuijie = (item: HuijieInsight) => {
-    const text = `【慧姐实战牌语心法 · ${item.title}】\n💬 语音实录：${item.quote}\n🎯 核心法则：${item.coreRule}\n💡 实战应用：${item.application}\n👩‍🏫 经验贡献：慧姐\n👉 掼蛋大师教练 (https://guandan.weiai.ai)`;
+    const text = `【慧姐实战牌语心法 · ${item.title}】\n🎯 核心法则：${item.coreRule}\n💡 实战应用：${item.application}\n👩‍🏫 经验贡献：慧姐（北美高校联盟北加硅谷名宿）\n👉 掼蛋大师教练 (https://guandan.weiai.ai)`;
     navigator.clipboard.writeText(text);
     setCopiedHuijieId(item.id);
     setTimeout(() => setCopiedHuijieId(null), 2500);
@@ -115,15 +116,15 @@ export const BaodianView: React.FC = () => {
               </span>
               <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold border border-amber-500/40 flex items-center gap-1">
                 <Crown className="w-3 h-3 text-amber-400" />
-                <span>蒋主席 博弈与残局心法</span>
+                <span>蒋主席 (北美高校联盟掼蛋俱乐部名誉主席)</span>
               </span>
               <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold border border-rose-500/40 flex items-center gap-1">
-                <HeartHandshake className="w-3 h-3 text-rose-400" />
-                <span>慧姐 牌语攻防实录</span>
+                <Award className="w-3 h-3 text-rose-400" />
+                <span>慧姐 (北美高校联盟北加硅谷名宿)</span>
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              致谢名宿与校友会传承：收录中山大学校友会 18 条经典口诀、蒋主席博弈残局心法及慧姐实战牌语实录。
+              致谢名宿与校友会传承：收录广州市中山大学校友会 18 条经典口诀、蒋主席（北美高校联盟掼蛋俱乐部名誉主席）博弈心法及慧姐（北美高校联盟北加硅谷名宿）牌语实录。
             </p>
           </div>
         </div>
@@ -308,7 +309,7 @@ export const BaodianView: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Crown className="w-4 h-4 text-amber-400 shrink-0" />
               <p className="text-xs text-slate-300">
-                <strong>蒋主席口述博弈精解</strong>：“打牌你永远把自己当作配角，好的牌去助攻对家，把对家送走自己收拾残局才是真正的高手；残局要靠逆向预设全场牌型才能绝境翻盘！”
+                <strong>蒋主席（北美高校联盟掼蛋俱乐部名誉主席）博弈心法</strong>：“打牌你永远把自己当作配角，好的牌去助攻对家，把对家送走自己收拾残局才是真正的高手；残局要靠逆向预设全场牌型才能绝境翻盘！”
               </p>
             </div>
 
@@ -357,7 +358,7 @@ export const BaodianView: React.FC = () => {
                   {/* Audio Transcript Quote Box */}
                   <div className="bg-slate-950 p-3 rounded-xl border border-amber-500/20 space-y-1 relative">
                     <MessageSquareQuote className="w-4 h-4 text-amber-400 absolute right-2.5 top-2.5 opacity-40" />
-                    <div className="text-[11px] font-bold text-amber-300">【蒋主席口述原声录音】</div>
+                    <div className="text-[11px] font-bold text-amber-300">【蒋主席口述心法精析】</div>
                     <p className="text-xs text-slate-300 italic leading-relaxed">{item.quote}</p>
                   </div>
 
@@ -384,7 +385,7 @@ export const BaodianView: React.FC = () => {
 
                   {/* Footer Attribution */}
                   <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[10px] text-slate-500">
-                    <span>口述经验贡献：蒋主席</span>
+                    <span>经验贡献：蒋主席（北美高校联盟掼蛋俱乐部名誉主席）</span>
                     <span className="text-amber-400/80">掼蛋大师教练</span>
                   </div>
                 </div>
@@ -400,9 +401,9 @@ export const BaodianView: React.FC = () => {
           {/* Huijie Insights Top Notice */}
           <div className="shrink-0 bg-slate-950/80 p-3 rounded-xl border border-rose-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div className="flex items-center space-x-2">
-              <MessageSquareQuote className="w-4 h-4 text-rose-400 shrink-0" />
+              <Award className="w-4 h-4 text-rose-400 shrink-0" />
               <p className="text-xs text-slate-300">
-                <strong>慧姐经验精髓</strong>：“牌语是打出来的，不是眨眼睛送秋波！首发小单是主攻强牌信号；情况不明对子先行；多炸主攻，单炸安心当僚机！”
+                <strong>慧姐（北美高校联盟北加硅谷名宿）经验精髓</strong>：“牌语是打出来的，不是眨眼睛送秋波！首发小单是主攻强牌信号；情况不明对子先行；多炸主攻，单炸安心当僚机！”
               </p>
             </div>
 
@@ -451,7 +452,7 @@ export const BaodianView: React.FC = () => {
                   {/* Audio Transcript Quote Box */}
                   <div className="bg-slate-950 p-3 rounded-xl border border-rose-500/20 space-y-1 relative">
                     <MessageSquareQuote className="w-4 h-4 text-rose-400 absolute right-2.5 top-2.5 opacity-40" />
-                    <div className="text-[11px] font-bold text-rose-300">【慧姐口述原声录音】</div>
+                    <div className="text-[11px] font-bold text-rose-300">【慧姐口述心法精析】</div>
                     <p className="text-xs text-slate-300 italic leading-relaxed">{item.quote}</p>
                   </div>
 
@@ -475,7 +476,7 @@ export const BaodianView: React.FC = () => {
 
                   {/* Footer Attribution */}
                   <div className="border-t border-slate-800/80 pt-2 flex items-center justify-between text-[10px] text-slate-500">
-                    <span>口述经验贡献：慧姐</span>
+                    <span>经验贡献：慧姐（北美高校联盟北加硅谷名宿）</span>
                     <span className="text-rose-400/80">掼蛋大师教练</span>
                   </div>
                 </div>
