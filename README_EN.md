@@ -15,7 +15,7 @@
 
 ## 📖 Overview
 
-**Guandan Pro Coach** is an open-source, tournament-grade AI Guandan coaching, card tracking (50-Law HUD), endgame tactical puzzle, match replay analyzer, and WebRTC multiplayer platform.
+**Guandan Pro Coach** is an open-source, tournament-grade AI Guandan coaching, card tracking (50-Law HUD), endgame tactical puzzle, match replay analyzer, custom team cardback designer, and WebRTC multiplayer platform.
 
 Initiated by **VI AI for Good Foundation (唯爱AI公益基金会)** with algorithm research from **Zhejiang University AI Agent Lab (浙大智能体)** and tournament guidelines from **North America Chinese University Alumni Guandan Club (NAACU Guandan Club)**.
 
@@ -23,44 +23,42 @@ Initiated by **VI AI for Good Foundation (唯爱AI公益基金会)** with algori
 
 ## 🌟 Key Features
 
-### 1. ⚔️ AI Arena (4-Player & 6-Player 3v3 Modes)
-- **4-Player Standard (2 Decks / 108 Cards)** & **6-Player Team Battle (3 Decks / 162 Cards)**.
-- **3-Tier AI Engine**: `🌱 Novice`, `⚔️ Intermediate`, `👑 Grandmaster`.
-- **God Mode (Open Hands)**: Real-time full visibility of all player hands for strategy observation.
-- **Swap Hands Rematch Mode**: Swap dealt hands with the opponent team to test identical deal decisions.
-- **Grade Progression Ladder (Grades 2 to A)** and **Official "Passing Grade A"** Championship rules.
+### 1. 🏟️ Native 16:9 Landscape Arena (Tencent-Style Arcade Layout)
+- **All-in-One Horizontal Display**: Main Tournament Table, AI Master Coach Live Tips, and 50-Law Tracker simultaneously rendered on a single screen without scrolling!
+- **Adaptive Mobile Hand**: Zero-scroll dynamic card overlapping ensuring all 27 cards fit in 100% viewport width.
+- **Top-Only Large Pip Typography**: High-contrast, clean card faces without distracting inverted corner pips.
+- **3D Avatars & Countdown Rings**: Real-time SVG circular timer transitioning to warning rose-red when low on time.
 
-### 2. 🎬 Match Replay & Move Analyzer
-- **Interactive Scrubber Slider**: Step forward/backward through all game tricks ($0 \dots N$) with autoplay (1.0x / 1.5x / 3.0x).
-- **Tactical Commentary & Blunder Detection**: Instant feedback on whether a cut was optimal.
-- **JSON Import / Export**: Share and load match records across devices.
+### 2. 🎴 3-Option Initial Hand Grouping System
+- **① Natural Sort (`1.由大到小`)**: Descending ranks from Red Joker to 2.
+- **② AI Coach Suggested (`2.教练建议`)**: Optimal tactical grouping (bombs, straight flushes, straights, tubes, plates, pairs, singles).
+- **③ Player Manual Grouping (`3.玩家组牌`)**: Select any hand cards and group them into custom bundles with 1-click dissolve/reset.
 
-### 3. 🌐 WebRTC Serverless Multiplayer
-- Peer-to-peer data channels via WebRTC (PeerJS).
-- Host/Join rooms with 4-digit codes; empty seats automatically filled by Master AI bots.
+### 3. 🎨 Custom Card Back & Team Logo Designer
+- **6 Prestige Presets**: North American University Alumni Alliance (NAACU), SYSU Alumni, ZJU AI Lab, VI AI for Good, Royal Golden Dragon, Obsidian Cyber Pro.
+- **Custom Club Logo Upload & DIY Text**: Upload PNG/JPG emblems, customize team titles and pick from 5 luxury felt colors.
 
-### 4. 🧠 50-Law Card Tracker HUD
-- Real-time monitoring of Rank 5 and Rank 10 to mathematically verify external straight possibilities.
-- Live counts of Big Jokers, Small Jokers, Level Wildcards, Aces, and Kings.
-- High-risk endgame alerts when opponents have 1, 2, or 5 cards left.
+### 4. 📚 Strategy & Master Insights Vault
+- 🏛️ **Guangzhou Sun Yat-sen University Alumni Association**: 18 Golden Guandan Rules with game-theory breakdowns.
+- 👑 **President Jiang (Honorary President of NAACU Guandan Club)**: Master Insights (Endgame Backward Induction, Isolating Singletons, 50% Passing Rule).
+- 👩‍🏫 **Huijie (NAACU Silicon Valley Veteran)**: Tactical Card Signaling (First Lead Singles, Probing Pairs, Bomb Fire Control).
 
-### 5. 🧩 Endgame Tactical Puzzles
-- Curated challenges covering downstream blocking, wildcard straight flushes, and bomb timing.
+### 5. 🎵 Suno Chinese Epic Battle Radio (145 Tracks)
+- Complete catalog of 145 original battle soundtracks including *Man Jiang Hong*, *Dao Bing He Yi*, and *Guan Zhan Feng Yun*.
 
-### 6. 🎓 Beginner Academy & 7-Day Roadmap
-- Curriculum designed by **Michael HUO** with 5 Golden Rules and 10-Second Pre-Move Checklist.
-
-### 7. 🌐 Full Internationalization (i18n)
-- Seamless real-time switching between `Simplified Chinese (zh_cn)`, `Traditional Chinese (zh_tw)`, and `English (en)`.
+### 6. 🏆 Player EXP Ladder & 6-Digit Sync PIN
+- 5 progression tiers (`Novice`, `Intermediate`, `Elite`, `Master`, `Grandmaster`).
+- Combat radar tracking win rates, bombs, head ranks, and swap rematch victories.
+- 6-digit sync PIN for instant cross-device profile migration.
 
 ---
 
 ## 🚀 Quickstart
 
 ```bash
-# Clone the repository
-git clone https://github.com/viaiforgood/guandan-app.git
-cd guandan-app
+# Clone the public repository
+git clone https://github.com/viaiforgood/guandan-coach.git
+cd guandan-coach
 
 # Install dependencies
 npm install
@@ -83,7 +81,8 @@ npm run build
 - **Algorithm & Game Theory**: 🦅 **Zhejiang University AI Agent Research Lab (浙大智能体)**
 - **Tournament Standards**: 🎓 **North America Chinese University Alumni Guandan Club (NAACU Club)**
 - **Classical Manual Heritage**: 🏛️ **Guangzhou Sun Yat-sen University Alumni Association (广州市中山大学校友会)** (18 Gold Battle Rules)
-- **Battle Strategy Contribution**: 👩‍🏫 **Huijie (慧姐)** (Battle Insights & Card Signaling)
+- **Master Game Theory**: 👑 **President Jiang** (Honorary President of NAACU Guandan Club)
+- **Battle Strategy Contribution**: 👩‍🏫 **Huijie** (NAACU Northern California Silicon Valley Veteran)
 - **Curriculum Architecture**: 👨‍🏫 **Michael HUO**
 
 ---
