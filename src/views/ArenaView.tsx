@@ -225,7 +225,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
   };
 
   return (
-    <div className="h-full w-full flex flex-col lg:flex-row gap-2 sm:gap-3 min-h-0 overflow-hidden relative font-sans">
+    <div className="h-full w-full flex flex-col md:flex-row landscape:flex-row gap-2 sm:gap-3 min-h-0 overflow-hidden relative font-sans">
       {/* Toast Notification */}
       {notification && (
         <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black px-4 py-2 rounded-2xl shadow-2xl animate-bounce border-2 border-amber-300 text-xs sm:text-sm">
@@ -327,8 +327,8 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
           </div>
         </div>
 
-        {/* Mobile Switcher Tabs (Table / Coach / Tracker) */}
-        <div className="flex lg:hidden items-center justify-between bg-slate-900/90 p-1 rounded-2xl border border-slate-800 text-xs shadow-md">
+        {/* Mobile Switcher Tabs (Only in Portrait mode; Hidden in Landscape/Horizontal mode) */}
+        <div className="flex portrait:flex landscape:hidden md:hidden items-center justify-between bg-slate-900/90 p-1 rounded-2xl border border-slate-800 text-xs shadow-md">
           <button
             onClick={() => setMobileTab('table')}
             className={`flex-1 py-1.5 rounded-xl font-black transition-all ${
@@ -357,8 +357,8 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
           </button>
         </div>
 
-        {/* Tournament Emerald Felt Poker Table */}
-        <div className={`flex-1 min-h-0 w-full ${mobileTab !== 'table' ? 'hidden lg:flex' : 'flex'}`}>
+        {/* Tournament Emerald Felt Poker Table (Always visible in Landscape, or when table tab is active in Portrait) */}
+        <div className={`flex-1 min-h-0 w-full ${mobileTab !== 'table' ? 'hidden landscape:flex md:flex' : 'flex'}`}>
           <PokerTable
             gameState={gameState}
             selectedIds={selectedIds}
@@ -488,8 +488,8 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
         </div>
       </div>
 
-      {/* Right Column on Desktop: AI Coach & 50-Law Tracker (100% in viewport) */}
-      <div className="hidden lg:flex w-80 xl:w-96 h-full flex-col gap-2 min-h-0 shrink-0">
+      {/* Right Column: AI Coach & 50-Law Tracker (Always visible in Landscape & Desktop, 100% in one screen) */}
+      <div className="hidden landscape:flex md:flex w-64 sm:w-72 lg:w-80 xl:w-96 h-full flex-col gap-2 min-h-0 shrink-0">
         {/* Top Box: AI Coach Live Guidance */}
         <div className="flex-1 min-h-0 overflow-y-auto">
           <CoachBubble
