@@ -21,6 +21,9 @@ import {
   ArrowDownWideNarrow,
   Plus,
   RotateCcw,
+  Smartphone,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 
 export type GroupingMode = 'natural' | 'coach' | 'manual';
@@ -53,6 +56,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
     if (saved === 'natural' || saved === 'coach' || saved === 'manual') return saved;
     return 'coach';
   });
+  const [isLandscapeMode, setIsLandscapeMode] = useState<boolean>(false);
   const [customGroups, setCustomGroups] = useState<Card[][]>([]);
   const [isMuted, setIsMuted] = useState<boolean>(() => Sound.getIsMuted());
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
@@ -79,6 +83,11 @@ export const PokerTable: React.FC<PokerTableProps> = ({
   const handleSelectGroupingMode = (mode: GroupingMode) => {
     setGroupingMode(mode);
     localStorage.setItem('guandan_grouping_mode', mode);
+  };
+
+  const handleToggleLandscape = () => {
+    setIsLandscapeMode((prev) => !prev);
+    Sound.playCardClick();
   };
 
   // Reset countdown on turn change
@@ -282,8 +291,49 @@ export const PokerTable: React.FC<PokerTableProps> = ({
     );
   };
 
+  // Adaptive zero-scroll single-row card stack helper for mobile & desktop
+  const renderAdaptiveCards = (cards: Card[]) => {
+    const total = cards.length;
+    return (
+      <div className="flex items-end justify-center w-full max-w-4xl px-1 overflow-visible">
+        {cards.map((c, idx) => {
+          const isLast = idx === total - 1;
+          const overlapStyle = isLast
+            ? {}
+            : {
+                marginRight:
+                  total > 20
+                    ? 'max(-33px, calc((100% - 44px) / ' + (total - 1) + ' - 44px))'
+                    : total > 12
+                    ? '-26px'
+                    : '-18px',
+                zIndex: idx + 1,
+              };
+
+          return (
+            <div key={c.id} style={overlapStyle} className="transition-all duration-150 shrink-0">
+              <PlayingCard
+                card={c}
+                levelRank={levelRank}
+                isSelected={selectedIds.has(c.id)}
+                onClick={() => onToggleCard(c.id)}
+                size={isLandscapeMode ? 'lg' : 'md'}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
-    <div className="relative w-full h-full flex flex-col justify-between select-none overflow-hidden rounded-3xl border-4 border-[#2b1f14] shadow-[0_20px_50px_rgba(0,0,0,0.85)] font-sans">
+    <div
+      className={`relative select-none overflow-hidden font-sans transition-all duration-300 ${
+        isLandscapeMode
+          ? 'fixed inset-0 z-50 w-full h-full rounded-none border-none shadow-none flex flex-col justify-between'
+          : 'w-full h-full flex flex-col justify-between rounded-3xl border-4 border-[#2b1f14] shadow-[0_20px_50px_rgba(0,0,0,0.85)]'
+      }`}
+    >
       {/* Tournament Emerald Felt Background with Stadium Spotlight */}
       <div
         className="absolute inset-0 pointer-events-none"
@@ -316,7 +366,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
       {/* Top Bar: Seats (North/Partner), Quick Emotes, Sound & God Mode */}
       <div className="relative z-20 px-3 pt-2 sm:px-4 flex items-center justify-between">
-        {/* Quick Voice & Emoji Buttons */}
+        {/* Quick Voice & Emoji Buttons + Landscape Mode Switcher */}
         <div className="flex items-center space-x-1.5 bg-slate-950/80 backdrop-blur-md p-1 rounded-2xl border border-emerald-500/30 shadow-lg">
           <button
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -339,6 +389,21 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
           </button>
+
+          {/* Landscape / Fullscreen Toggle Button (腾讯横屏模式) */}
+          <button
+            onClick={handleToggleLandscape}
+            className={`px-2 py-1 rounded-xl text-xs font-black flex items-center gap-1 transition-transform active:scale-95 shadow ${
+              isLandscapeMode
+                ? 'bg-amber-500 text-slate-950 shadow-amber-500/40'
+                : 'bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/30'
+            }`}
+            title="腾讯16:9横屏全屏对战"
+          >
+            {isLandscapeMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            <span className="hidden sm:inline">{isLandscapeMode ? '退出横屏' : '腾讯横屏'}</span>
+          </button>
+
           {onToggleGodMode && (
             <button
               onClick={onToggleGodMode}
@@ -419,7 +484,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
                   key={c.id}
                   card={c}
                   levelRank={levelRank}
-                  size="md"
+                  size={isLandscapeMode ? 'lg' : 'md'}
                   disabled
                 />
               ))
@@ -445,7 +510,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
       </div>
 
       {/* Bottom Area: Tactile 3D Action Controls & User Cards */}
-      <div className="relative z-20 px-2 pb-2 sm:px-4 flex flex-col items-center space-y-1.5">
+      <div className="relative z-20 px-2 pb-2 sm:px-4 flex flex-col items-center space-y-1.5 w-full">
         {/* iOS 3D Tactile Action Bar */}
         <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 bg-slate-950/85 backdrop-blur-xl p-1.5 rounded-2xl border border-amber-500/40 shadow-2xl">
           {/* 3-Option Grouping Mode Switcher (1.由大到小 / 2.教练组牌 / 3.玩家组牌) */}
@@ -571,31 +636,18 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           )}
         </div>
 
-        {/* User Hand Cards View (Grouped or Plain based on 3-Option Mode) */}
-        <div className="w-full max-w-4xl overflow-x-auto pb-1 flex justify-center items-end min-h-[95px] sm:min-h-[115px]">
-          {/* Mode 1: 原始由大到小连续排列 (Natural Rank Sort) */}
-          {groupingMode === 'natural' && (
-            <div className="flex items-end -space-x-4 sm:-space-x-5.5 p-1">
-              {naturalSortedHand.map((c) => (
-                <PlayingCard
-                  key={c.id}
-                  card={c}
-                  levelRank={levelRank}
-                  isSelected={selectedIds.has(c.id)}
-                  onClick={() => onToggleCard(c.id)}
-                  size="md"
-                />
-              ))}
-            </div>
-          )}
+        {/* User Hand Cards View: Zero-Scroll Adaptive Layout */}
+        <div className="w-full flex justify-center items-end min-h-[95px] sm:min-h-[115px] px-1 overflow-visible">
+          {/* Mode 1: 原始由大到小连续排列 (Natural Rank Sort with Dynamic Overlap - No Horizontal Scrollbar!) */}
+          {groupingMode === 'natural' && renderAdaptiveCards(naturalSortedHand)}
 
-          {/* Mode 2: 教练建议组牌 (AI Optimizer Clustered Groups) */}
+          {/* Mode 2: 教练建议组牌 (AI Optimizer Clustered Groups - Responsive Wrap) */}
           {groupingMode === 'coach' && (
-            <div className="flex items-end space-x-2 sm:space-x-3">
+            <div className="flex flex-wrap justify-center items-end gap-1.5 sm:gap-2.5 max-w-4xl">
               {bestGroups.map((group, gIdx) => (
                 <div
                   key={gIdx}
-                  className="flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-black/25 hover:bg-black/35 rounded-2xl transition-colors border border-amber-500/20"
+                  className="flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-black/25 hover:bg-black/35 rounded-2xl transition-colors border border-amber-500/20 shrink-0"
                 >
                   {group.cards.map((c) => (
                     <PlayingCard
@@ -604,7 +656,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
                       levelRank={levelRank}
                       isSelected={selectedIds.has(c.id)}
                       onClick={() => onToggleCard(c.id)}
-                      size="md"
+                      size={isLandscapeMode ? 'lg' : 'md'}
                     />
                   ))}
                 </div>
@@ -614,12 +666,12 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
           {/* Mode 3: 玩家自由手动组牌 (Player Custom Groups + Ungrouped Cards) */}
           {groupingMode === 'manual' && (
-            <div className="flex items-end space-x-2 sm:space-x-3">
+            <div className="flex flex-wrap justify-center items-end gap-1.5 sm:gap-2.5 max-w-4xl">
               {/* Render player's created custom groups */}
               {customGroups.map((group, gIdx) => (
                 <div
                   key={gIdx}
-                  className="relative flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-sky-950/40 hover:bg-sky-950/60 rounded-2xl transition-colors border border-sky-500/30 group"
+                  className="relative flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-sky-950/40 hover:bg-sky-950/60 rounded-2xl transition-colors border border-sky-500/30 group shrink-0"
                 >
                   {/* Dissolve Group Pill */}
                   <button
@@ -641,7 +693,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
                       levelRank={levelRank}
                       isSelected={selectedIds.has(c.id)}
                       onClick={() => onToggleCard(c.id)}
-                      size="md"
+                      size={isLandscapeMode ? 'lg' : 'md'}
                     />
                   ))}
                 </div>
@@ -649,7 +701,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
               {/* Ungrouped / Remaining Cards */}
               {ungroupedCards.length > 0 && (
-                <div className="relative flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-black/20 rounded-2xl border border-white/10">
+                <div className="relative flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-black/20 rounded-2xl border border-white/10 shrink-0">
                   {customGroups.length > 0 && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-400 text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-slate-600 shadow z-30 pointer-events-none">
                       散牌
@@ -662,7 +714,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
                       levelRank={levelRank}
                       isSelected={selectedIds.has(c.id)}
                       onClick={() => onToggleCard(c.id)}
-                      size="md"
+                      size={isLandscapeMode ? 'lg' : 'md'}
                     />
                   ))}
                 </div>

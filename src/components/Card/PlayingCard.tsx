@@ -32,7 +32,7 @@ export const PlayingCard: React.FC<PlayingCardProps> = ({
   const sizeClasses = {
     sm: 'w-7.5 h-11 text-[11px] rounded-md',
     md: 'w-11 h-17 sm:w-14 sm:h-21 text-sm rounded-lg',
-    lg: 'w-16 h-24 sm:w-20 sm:h-30 text-base rounded-xl',
+    lg: 'w-15 h-22 sm:w-18 sm:h-27 text-base rounded-xl',
   }[size];
 
   const handleClick = () => {
@@ -60,38 +60,38 @@ export const PlayingCard: React.FC<PlayingCardProps> = ({
           : 'linear-gradient(180deg, #ffffff 0%, #fdfdfd 60%, #f4f4f5 100%)',
       }}
     >
-      {/* Top-Left Corner Pip */}
-      <div className="flex flex-col items-center leading-none z-10">
-        <span className="font-extrabold tracking-tight text-xs sm:text-[13px] drop-shadow-sm">
+      {/* Top-Left Corner Pip (Only top displayed for maximum clarity & prominence) */}
+      <div className="flex flex-col items-center leading-none z-10 self-start">
+        <span className="font-extrabold tracking-tight text-xs sm:text-sm md:text-base drop-shadow-sm">
           {isJoker ? (card.rank === 'BJ' ? '大' : '小') : card.rank}
         </span>
-        <span className="text-[10px] sm:text-xs leading-tight -mt-0.5 font-normal">
+        <span className="text-[11px] sm:text-xs md:text-sm leading-tight -mt-0.5 font-bold">
           {isJoker ? '王' : SUIT_SYMBOLS[card.suit]}
         </span>
       </div>
 
-      {/* Center Authentic Watermark & Joker Emblem */}
+      {/* Center / Body Watermark & Joker Emblem */}
       {!compact && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           {isJoker ? (
-            <div className="flex flex-col items-center justify-center opacity-85 scale-90">
+            <div className="flex flex-col items-center justify-center opacity-85 scale-90 mt-2">
               <span className="text-xl sm:text-2xl filter drop-shadow">
                 {card.rank === 'BJ' ? '👑' : '🎭'}
               </span>
               <span
-                className={`text-[8px] sm:text-[9px] font-black px-1 rounded ${
+                className={`text-[8px] font-black px-1 rounded mt-0.5 ${
                   card.rank === 'BJ' ? 'bg-rose-500 text-white' : 'bg-slate-800 text-white'
                 }`}
               >
-                {card.rank === 'BJ' ? 'RED JOKER' : 'BLACK JOKER'}
+                {card.rank === 'BJ' ? '大王' : '小王'}
               </span>
             </div>
           ) : wildcard ? (
-            <div className="flex flex-col items-center justify-center opacity-25">
+            <div className="flex flex-col items-center justify-center opacity-25 mt-1">
               <span className="text-2xl sm:text-3xl text-rose-600 animate-pulse">♥</span>
             </div>
           ) : (
-            <span className="text-xl sm:text-2xl opacity-15">
+            <span className="text-xl sm:text-2xl opacity-15 mt-1">
               {SUIT_SYMBOLS[card.suit]}
             </span>
           )}
@@ -105,16 +105,6 @@ export const PlayingCard: React.FC<PlayingCardProps> = ({
           <span>配</span>
         </div>
       )}
-
-      {/* Bottom-Right Inverted Corner Pip */}
-      <div className="flex flex-col items-center leading-none rotate-180 self-end z-10">
-        <span className="font-extrabold tracking-tight text-xs sm:text-[13px] drop-shadow-sm">
-          {isJoker ? (card.rank === 'BJ' ? '大' : '小') : card.rank}
-        </span>
-        <span className="text-[10px] sm:text-xs leading-tight -mt-0.5 font-normal">
-          {isJoker ? '王' : SUIT_SYMBOLS[card.suit]}
-        </span>
-      </div>
     </div>
   );
 };
