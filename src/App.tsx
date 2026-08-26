@@ -11,6 +11,7 @@ import { BaodianView } from './views/BaodianView';
 import { BgmPlayer } from './components/Audio/BgmPlayer';
 import { BrandLogo } from './components/Logo/BrandLogo';
 import { PlayerProfileModal } from './components/Profile/PlayerProfileModal';
+import { CardBackCustomizerModal } from './components/Card/CardBackCustomizerModal';
 import { UserProfile, loadUserProfile, getExpProgress } from './core/profile';
 import { ReplayRecord } from './core/types';
 import {
@@ -27,6 +28,7 @@ import {
   GraduationCap,
   Sparkles,
   Scroll,
+  Palette,
 } from 'lucide-react';
 
 type TabType = 'arena' | 'replay' | 'online' | 'puzzles' | 'drills' | 'baodian' | 'academy' | 'ocr';
@@ -37,6 +39,7 @@ const AppContent: React.FC = () => {
   const [activeReplayRecord, setActiveReplayRecord] = useState<ReplayRecord | null>(null);
   const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
   const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
+  const [showCardBackModal, setShowCardBackModal] = useState<boolean>(false);
   const [userProfile, setUserProfile] = useState<UserProfile>(() => loadUserProfile());
 
   const expProgress = getExpProgress(userProfile.exp);
@@ -234,6 +237,16 @@ const AppContent: React.FC = () => {
               </button>
             </div>
 
+            {/* Card Back Customizer Button */}
+            <button
+              onClick={() => setShowCardBackModal(true)}
+              className="bg-slate-900/80 hover:bg-slate-800 text-amber-300 hover:text-amber-200 px-2 py-1 rounded-lg border border-amber-500/40 text-[11px] font-bold flex items-center gap-1 transition-transform active:scale-95 shadow"
+              title="定制战队牌背与专属Logo"
+            >
+              <Palette className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">定制牌背</span>
+            </button>
+
             <button
               onClick={() => setShowAboutModal(true)}
               className="bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white px-2 py-1 rounded-lg border border-slate-700 text-[11px] font-bold flex items-center gap-1 transition-transform active:scale-95 shadow"
@@ -416,6 +429,12 @@ const AppContent: React.FC = () => {
           onClose={() => setShowProfileModal(false)}
         />
       )}
+
+      {/* Card Back & Logo Customizer Modal */}
+      <CardBackCustomizerModal
+        isOpen={showCardBackModal}
+        onClose={() => setShowCardBackModal(false)}
+      />
     </div>
   );
 };

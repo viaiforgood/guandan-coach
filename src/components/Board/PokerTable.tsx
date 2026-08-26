@@ -6,6 +6,7 @@ import { choosePlan } from '../../core/optimizer';
 import { Sound } from '../../core/audio';
 import { Voice, POPULAR_EMOJIS, POPULAR_PHRASES, VoicePhrase } from '../../core/voice';
 import { sortHand } from '../../core/cards';
+import { CardBackCustomizerModal } from '../Card/CardBackCustomizerModal';
 import {
   Crown,
   Sparkles,
@@ -24,6 +25,7 @@ import {
   Smartphone,
   Maximize2,
   Minimize2,
+  Palette,
 } from 'lucide-react';
 
 export type GroupingMode = 'natural' | 'coach' | 'manual';
@@ -61,6 +63,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
   const [isMuted, setIsMuted] = useState<boolean>(() => Sound.getIsMuted());
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
   const [showVoicePicker, setShowVoicePicker] = useState<boolean>(false);
+  const [showCardBackModal, setShowCardBackModal] = useState<boolean>(false);
   const [activeEmojis, setActiveEmojis] = useState<Record<number, { emoji: string; text?: string } | null>>({});
   const [countdown, setCountdown] = useState<number>(20);
 
@@ -388,6 +391,15 @@ export const PokerTable: React.FC<PokerTableProps> = ({
             title={isMuted ? '开启音效' : '静音'}
           >
             {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
+          </button>
+
+          {/* Card Back Customizer Button */}
+          <button
+            onClick={() => setShowCardBackModal(true)}
+            className="p-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-xl transition-transform active:scale-95 shadow border border-amber-500/20"
+            title="定制专属牌背与Logo"
+          >
+            <Palette className="w-4 h-4" />
           </button>
 
           {/* Landscape / Fullscreen Toggle Button (腾讯横屏模式) */}
@@ -769,6 +781,12 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           </div>
         </div>
       )}
+
+      {/* Card Back Customizer Modal */}
+      <CardBackCustomizerModal
+        isOpen={showCardBackModal}
+        onClose={() => setShowCardBackModal(false)}
+      />
     </div>
   );
 };
