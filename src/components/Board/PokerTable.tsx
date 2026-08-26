@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { GameState, PlayerSeat, TrickPlay } from '../../core/types';
+import { Card, GameState, PlayerSeat, TrickPlay } from '../../core/types';
 import { PlayingCard } from '../Card/PlayingCard';
 import { describeCombo } from '../../core/combos';
 import { choosePlan } from '../../core/optimizer';
 import { Sound } from '../../core/audio';
 import { Voice, POPULAR_EMOJIS, POPULAR_PHRASES, VoicePhrase } from '../../core/voice';
+import { sortHand } from '../../core/cards';
 import {
   Crown,
   Sparkles,
@@ -16,7 +17,13 @@ import {
   Smile,
   MessageCircle,
   Zap,
+  Layers,
+  ArrowDownWideNarrow,
+  Plus,
+  RotateCcw,
 } from 'lucide-react';
+
+export type GroupingMode = 'natural' | 'coach' | 'manual';
 
 interface PokerTableProps {
   gameState: GameState;
@@ -41,7 +48,12 @@ export const PokerTable: React.FC<PokerTableProps> = ({
   onToggleGodMode,
   onSendEmoji,
 }) => {
-  const [groupingMode, setGroupingMode] = useState<'plan' | 'rank'>('plan');
+  const [groupingMode, setGroupingMode] = useState<GroupingMode>(() => {
+    const saved = localStorage.getItem('guandan_grouping_mode');
+    if (saved === 'natural' || saved === 'coach' || saved === 'manual') return saved;
+    return 'coach';
+  });
+  const [customGroups, setCustomGroups] = useState<Card[][]>([]);
   const [isMuted, setIsMuted] = useState<boolean>(() => Sound.getIsMuted());
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
   const [showVoicePicker, setShowVoicePicker] = useState<boolean>(false);
@@ -63,6 +75,12 @@ export const PokerTable: React.FC<PokerTableProps> = ({
   const userHand = hands[0] || [];
   const isMyTurn = currentTurn === 0;
 
+  // Persist grouping mode preference
+  const handleSelectGroupingMode = (mode: GroupingMode) => {
+    setGroupingMode(mode);
+    localStorage.setItem('guandan_grouping_mode', mode);
+  };
+
   // Reset countdown on turn change
   useEffect(() => {
     setCountdown(20);
@@ -72,9 +90,52 @@ export const PokerTable: React.FC<PokerTableProps> = ({
     return () => clearInterval(interval);
   }, [currentTurn]);
 
-  // Plan groups for user hand
+  // Clean custom groups when cards are played
+  useEffect(() => {
+    const userHandCardIds = new Set(userHand.map((c) => c.id));
+    setCustomGroups((prevGroups) =>
+      prevGroups
+        .map((group) => group.filter((c) => userHandCardIds.has(c.id)))
+        .filter((group) => group.length > 0)
+    );
+  }, [userHand]);
+
+  // Plan groups for user hand (Coach recommended)
   const planResult = choosePlan(userHand, levelRank);
   const bestGroups = planResult.best.groups;
+
+  // Natural descending order hand (Option 1: 原始由大到小)
+  const naturalSortedHand = sortHand([...userHand], levelRank, true);
+
+  // Player Manual Grouping logic (Option 3: 玩家自由组牌)
+  const activeCustomGroupCardIds = new Set(customGroups.flatMap((g) => g.map((c) => c.id)));
+  const ungroupedCards = naturalSortedHand.filter((c) => !activeCustomGroupCardIds.has(c.id));
+
+  const handleCreateCustomGroup = () => {
+    if (selectedIds.size === 0) return;
+    const cardsToGroup = userHand.filter((c) => selectedIds.has(c.id));
+    if (cardsToGroup.length === 0) return;
+
+    // Remove these cards from any existing custom groups first
+    const cleanOldGroups = customGroups
+      .map((g) => g.filter((c) => !selectedIds.has(c.id)))
+      .filter((g) => g.length > 0);
+
+    setCustomGroups([...cleanOldGroups, cardsToGroup]);
+    onClearSelection();
+    Sound.playCardPlay();
+  };
+
+  const handleDissolveCustomGroup = (index: number) => {
+    setCustomGroups((prev) => prev.filter((_, idx) => idx !== index));
+    Sound.playCardClick();
+  };
+
+  const handleResetCustomGroups = () => {
+    setCustomGroups([]);
+    onClearSelection();
+    Sound.playCardClick();
+  };
 
   const seatNames4p: Record<number, { name: string; pos: string; role: string }> = {
     0: { name: '我', pos: '南', role: '己方主攻' },
@@ -128,7 +189,8 @@ export const PokerTable: React.FC<PokerTableProps> = ({
   const currentTrickPlaysList = Object.values(trickPlays).filter(
     (tp): tp is TrickPlay => tp !== null && tp !== undefined && tp.action === 'play'
   );
-  const lastTrickPlay = currentTrickPlaysList.length > 0 ? currentTrickPlaysList[currentTrickPlaysList.length - 1] : null;
+  const lastTrickPlay =
+    currentTrickPlaysList.length > 0 ? currentTrickPlaysList[currentTrickPlaysList.length - 1] : null;
 
   // Render Seat Avatar & Info HUD
   const renderSeatAvatar = (seatIndex: number, extraClasses = '') => {
@@ -294,7 +356,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
         {/* Partner Seat (North Seat 2) */}
         <div className="flex flex-col items-center">
-          {renderSeatAvatar(2 as PlayerSeat)}
+          {renderSeatAvatar(2)}
           {isGodMode && hands[2] && (
             <div className="flex -space-x-4 mt-1 overflow-x-auto max-w-[200px] p-0.5 bg-black/40 rounded-lg">
               {hands[2].map((c) => (
@@ -322,7 +384,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
       <div className="relative z-10 flex-1 flex items-center justify-between px-2 sm:px-6 min-h-0">
         {/* West Opponent (Seat 3) */}
         <div className="flex flex-col items-center">
-          {renderSeatAvatar(3 as PlayerSeat)}
+          {renderSeatAvatar(3)}
           {isGodMode && hands[3] && (
             <div className="flex flex-col -space-y-6 mt-1 max-h-[140px] overflow-y-auto p-0.5 bg-black/40 rounded-lg">
               {hands[3].map((c) => (
@@ -371,7 +433,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
         {/* East Opponent (Seat 1) */}
         <div className="flex flex-col items-center">
-          {renderSeatAvatar(1 as PlayerSeat)}
+          {renderSeatAvatar(1)}
           {isGodMode && hands[1] && (
             <div className="flex flex-col -space-y-6 mt-1 max-h-[140px] overflow-y-auto p-0.5 bg-black/40 rounded-lg">
               {hands[1].map((c) => (
@@ -385,30 +447,76 @@ export const PokerTable: React.FC<PokerTableProps> = ({
       {/* Bottom Area: Tactile 3D Action Controls & User Cards */}
       <div className="relative z-20 px-2 pb-2 sm:px-4 flex flex-col items-center space-y-1.5">
         {/* iOS 3D Tactile Action Bar */}
-        <div className="flex items-center space-x-2 sm:space-x-3 bg-slate-950/85 backdrop-blur-xl p-1.5 rounded-2xl border border-amber-500/40 shadow-2xl">
-          {/* Arrange Toggle: Plan vs Rank */}
-          <div className="flex items-center bg-slate-900 p-0.5 rounded-xl border border-slate-800 text-[11px] font-bold">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 bg-slate-950/85 backdrop-blur-xl p-1.5 rounded-2xl border border-amber-500/40 shadow-2xl">
+          {/* 3-Option Grouping Mode Switcher (1.由大到小 / 2.教练组牌 / 3.玩家组牌) */}
+          <div className="flex items-center bg-slate-900 p-0.5 rounded-xl border border-slate-800 text-[11px] font-black">
             <button
-              onClick={() => setGroupingMode('plan')}
-              className={`px-2 py-1 rounded-lg transition-all ${
-                groupingMode === 'plan'
+              onClick={() => handleSelectGroupingMode('natural')}
+              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
+                groupingMode === 'natural'
                   ? 'bg-amber-500 text-slate-950 shadow-md font-black'
                   : 'text-slate-400 hover:text-white'
               }`}
+              title="按点数由大到小依次连续排列"
             >
-              智能理牌
+              <ArrowDownWideNarrow className="w-3 h-3" />
+              <span>1.由大到小</span>
             </button>
             <button
-              onClick={() => setGroupingMode('rank')}
-              className={`px-2 py-1 rounded-lg transition-all ${
-                groupingMode === 'rank'
-                  ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+              onClick={() => handleSelectGroupingMode('coach')}
+              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
+                groupingMode === 'coach'
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 shadow-md font-black'
                   : 'text-slate-400 hover:text-white'
               }`}
+              title="AI教练根据掼蛋最佳策略自动成套理牌"
             >
-              点数排列
+              <Sparkles className="w-3 h-3" />
+              <span>2.教练建议</span>
+            </button>
+            <button
+              onClick={() => handleSelectGroupingMode('manual')}
+              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
+                groupingMode === 'manual'
+                  ? 'bg-gradient-to-r from-sky-400 to-sky-500 text-slate-950 shadow-md font-black'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="玩家自由选择任意手牌编组管理"
+            >
+              <Layers className="w-3 h-3" />
+              <span>3.玩家组牌</span>
             </button>
           </div>
+
+          {/* Manual Mode Auxiliary Buttons: 编为一组 / 还原组牌 */}
+          {groupingMode === 'manual' && (
+            <div className="flex items-center space-x-1 animate-fade-in">
+              <button
+                onClick={handleCreateCustomGroup}
+                disabled={selectedIds.size === 0}
+                className={`px-2.5 py-1 rounded-lg text-xs font-black flex items-center space-x-1 transition-all ${
+                  selectedIds.size > 0
+                    ? 'bg-sky-500 hover:bg-sky-400 text-slate-950 shadow active:scale-95'
+                    : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                }`}
+                title="将当前选中的牌编入一个新分组"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>编入组 ({selectedIds.size})</span>
+              </button>
+
+              {customGroups.length > 0 && (
+                <button
+                  onClick={handleResetCustomGroups}
+                  className="px-2 py-1 rounded-lg text-xs font-bold text-rose-300 hover:text-rose-200 bg-rose-950/60 border border-rose-500/30 flex items-center space-x-0.5 transition-all"
+                  title="拆解所有自定义分组，还原为散牌"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>还原</span>
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Hint Button */}
           <button
@@ -463,14 +571,31 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           )}
         </div>
 
-        {/* User Hand Cards View (Grouped or Plain) */}
+        {/* User Hand Cards View (Grouped or Plain based on 3-Option Mode) */}
         <div className="w-full max-w-4xl overflow-x-auto pb-1 flex justify-center items-end min-h-[95px] sm:min-h-[115px]">
-          {groupingMode === 'plan' ? (
+          {/* Mode 1: 原始由大到小连续排列 (Natural Rank Sort) */}
+          {groupingMode === 'natural' && (
+            <div className="flex items-end -space-x-4 sm:-space-x-5.5 p-1">
+              {naturalSortedHand.map((c) => (
+                <PlayingCard
+                  key={c.id}
+                  card={c}
+                  levelRank={levelRank}
+                  isSelected={selectedIds.has(c.id)}
+                  onClick={() => onToggleCard(c.id)}
+                  size="md"
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Mode 2: 教练建议组牌 (AI Optimizer Clustered Groups) */}
+          {groupingMode === 'coach' && (
             <div className="flex items-end space-x-2 sm:space-x-3">
               {bestGroups.map((group, gIdx) => (
                 <div
                   key={gIdx}
-                  className="flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-black/20 hover:bg-black/35 rounded-2xl transition-colors border border-white/5"
+                  className="flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-black/25 hover:bg-black/35 rounded-2xl transition-colors border border-amber-500/20"
                 >
                   {group.cards.map((c) => (
                     <PlayingCard
@@ -485,18 +610,63 @@ export const PokerTable: React.FC<PokerTableProps> = ({
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="flex items-end -space-x-4 sm:-space-x-5.5 p-1">
-              {userHand.map((c) => (
-                <PlayingCard
-                  key={c.id}
-                  card={c}
-                  levelRank={levelRank}
-                  isSelected={selectedIds.has(c.id)}
-                  onClick={() => onToggleCard(c.id)}
-                  size="md"
-                />
+          )}
+
+          {/* Mode 3: 玩家自由手动组牌 (Player Custom Groups + Ungrouped Cards) */}
+          {groupingMode === 'manual' && (
+            <div className="flex items-end space-x-2 sm:space-x-3">
+              {/* Render player's created custom groups */}
+              {customGroups.map((group, gIdx) => (
+                <div
+                  key={gIdx}
+                  className="relative flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-sky-950/40 hover:bg-sky-950/60 rounded-2xl transition-colors border border-sky-500/30 group"
+                >
+                  {/* Dissolve Group Pill */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDissolveCustomGroup(gIdx);
+                    }}
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 bg-sky-900 hover:bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full border border-sky-400 shadow z-30 transition-colors flex items-center gap-0.5"
+                    title="拆解该组"
+                  >
+                    <span>组{gIdx + 1}</span>
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+
+                  {group.map((c) => (
+                    <PlayingCard
+                      key={c.id}
+                      card={c}
+                      levelRank={levelRank}
+                      isSelected={selectedIds.has(c.id)}
+                      onClick={() => onToggleCard(c.id)}
+                      size="md"
+                    />
+                  ))}
+                </div>
               ))}
+
+              {/* Ungrouped / Remaining Cards */}
+              {ungroupedCards.length > 0 && (
+                <div className="relative flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-black/20 rounded-2xl border border-white/10">
+                  {customGroups.length > 0 && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-400 text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-slate-600 shadow z-30 pointer-events-none">
+                      散牌
+                    </div>
+                  )}
+                  {ungroupedCards.map((c) => (
+                    <PlayingCard
+                      key={c.id}
+                      card={c}
+                      levelRank={levelRank}
+                      isSelected={selectedIds.has(c.id)}
+                      onClick={() => onToggleCard(c.id)}
+                      size="md"
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
