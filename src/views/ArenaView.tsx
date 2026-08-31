@@ -243,9 +243,9 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
       )}
 
       {/* Main Table Column (Left on Desktop, Full Flex) */}
-      <div className="flex-1 h-full min-w-0 flex flex-col gap-1.5 min-h-0 overflow-hidden">
+      <div className="flex-1 h-full min-w-0 flex flex-col gap-1 min-h-0 overflow-hidden">
         {/* iOS Dynamic Island Style Top HUD */}
-        <div className="shrink-0 bg-slate-950/90 backdrop-blur-xl border border-slate-800/90 rounded-2xl px-3 py-1.5 flex items-center justify-between shadow-lg">
+        <div className="shrink-0 bg-slate-950/90 backdrop-blur-xl border border-slate-800/90 rounded-2xl px-2.5 py-1 landscape:py-0.5 flex items-center justify-between shadow-lg">
           {/* Left: Grade Level & Wildcard Badge */}
           <div className="flex items-center space-x-2">
             <div className="relative">
@@ -398,7 +398,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
         )}
 
         {/* Slim Bottom Match Action Dock */}
-        <div className="shrink-0 h-9 bg-slate-950/90 backdrop-blur-xl border border-slate-800/90 rounded-2xl px-3 flex items-center justify-between text-[11px] shadow-md">
+        <div className="shrink-0 h-8 landscape:h-7 bg-slate-950/90 backdrop-blur-xl border border-slate-800/90 rounded-2xl px-2.5 flex items-center justify-between text-[11px] landscape:text-[10px] shadow-md">
           {/* Mode Switcher: 4p vs 6p */}
           <div className="flex items-center space-x-1.5">
             <button

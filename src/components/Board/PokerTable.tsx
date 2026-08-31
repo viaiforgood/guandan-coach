@@ -25,8 +25,6 @@ import {
   Maximize2,
   Minimize2,
   Palette,
-  Clock,
-  Flame,
 } from 'lucide-react';
 
 export type GroupingMode = 'natural' | 'coach' | 'manual';
@@ -206,7 +204,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
     if (trick.action === 'pass') {
       return (
         <div
-          className={`animate-fade-in bg-rose-950/90 text-rose-300 border-2 border-rose-500/80 font-black text-xs sm:text-sm px-3 py-1 rounded-2xl shadow-2xl flex items-center space-x-1 backdrop-blur-md ${extraClasses}`}
+          className={`animate-fade-in bg-rose-950/90 text-rose-300 border border-rose-500/80 font-black text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full shadow-lg flex items-center space-x-1 backdrop-blur-md ${extraClasses}`}
         >
           <span className="text-rose-400">🛑</span>
           <span>不要 / 过</span>
@@ -216,14 +214,14 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
     if (trick.action === 'play' && trick.cards && trick.cards.length > 0) {
       return (
-        <div className={`flex flex-col items-center animate-fade-in space-y-1 ${extraClasses}`}>
+        <div className={`flex flex-col items-center animate-fade-in space-y-0.5 ${extraClasses}`}>
           {trick.combo && (
-            <div className="text-[10px] sm:text-[11px] font-black px-2 py-0.5 rounded-full bg-black/85 text-amber-300 border border-amber-500/50 shadow-md flex items-center gap-1">
+            <div className="text-[9px] sm:text-[10px] font-black px-1.5 py-0.2 rounded-full bg-black/85 text-amber-300 border border-amber-500/40 shadow-sm flex items-center gap-0.5">
               <span>{describeCombo(trick.combo)}</span>
-              {trick.combo.isBomb && <span className="text-rose-400 font-black animate-bounce">🔥 炸弹</span>}
+              {trick.combo.isBomb && <span className="text-rose-400 font-black">🔥 炸弹</span>}
             </div>
           )}
-          <div className="flex -space-x-3.5 sm:-space-x-4.5 drop-shadow-2xl">
+          <div className="flex -space-x-3 sm:-space-x-4 drop-shadow-xl">
             {trick.cards.map((c) => (
               <PlayingCard key={c.id} card={c} levelRank={levelRank} size="sm" disabled />
             ))}
@@ -249,7 +247,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
       <div className={`relative flex flex-col items-center select-none ${extraClasses}`}>
         {/* Dynamic Speech / Emoji Bubble */}
         {activeMsg && (
-          <div className="absolute -top-10 z-40 bg-white text-slate-900 px-2.5 py-1 rounded-2xl shadow-xl border border-amber-300 font-bold text-xs flex items-center space-x-1 animate-bounce whitespace-nowrap">
+          <div className="absolute -top-8 z-40 bg-white text-slate-900 px-2 py-0.5 rounded-2xl shadow-xl border border-amber-300 font-bold text-[11px] flex items-center space-x-1 animate-bounce whitespace-nowrap">
             <span>{activeMsg.emoji}</span>
             {activeMsg.text && <span>{activeMsg.text}</span>}
           </div>
@@ -259,18 +257,18 @@ export const PokerTable: React.FC<PokerTableProps> = ({
         <div className="relative flex items-center justify-center">
           {/* Active Player High-Visibility Spotlight Aura */}
           {isCurrent && (
-            <div className="absolute -inset-3 rounded-full bg-amber-400/25 blur-md animate-pulse pointer-events-none" />
+            <div className="absolute -inset-2 rounded-full bg-amber-400/30 blur-md animate-pulse pointer-events-none" />
           )}
 
           {isCurrent && (
-            <svg className="absolute -inset-1.5 w-14 h-14 sm:w-16 sm:h-16 animate-spin-slow z-10">
+            <svg className="absolute -inset-1 w-11 h-11 sm:w-14 sm:h-14 animate-spin-slow z-10">
               <circle
                 cx="50%"
                 cy="50%"
                 r="44%"
                 fill="none"
                 stroke={countdown <= 5 ? '#f43f5e' : '#f59e0b'}
-                strokeWidth="3.5"
+                strokeWidth="3"
                 strokeDasharray="100"
                 strokeDashoffset={`${(countdown / 20) * 100}`}
                 className="transition-all duration-1000"
@@ -279,21 +277,21 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           )}
 
           <div
-            className={`w-11 h-11 sm:w-13 sm:h-13 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 z-10 ${
+            className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 z-10 ${
               isCurrent
-                ? 'ring-4 ring-amber-400 bg-gradient-to-tr from-amber-500 via-amber-300 to-amber-600 scale-110 shadow-[0_0_25px_rgba(245,158,11,0.8)]'
+                ? 'ring-3 ring-amber-400 bg-gradient-to-tr from-amber-500 via-amber-300 to-amber-600 scale-105 shadow-[0_0_20px_rgba(245,158,11,0.8)]'
                 : isPartner
                 ? 'ring-2 ring-emerald-400/80 bg-gradient-to-tr from-emerald-800 to-emerald-950'
                 : 'ring-2 ring-slate-600 bg-gradient-to-tr from-slate-800 to-slate-950'
             }`}
           >
-            <span className="text-lg sm:text-xl filter drop-shadow">
+            <span className="text-base sm:text-lg filter drop-shadow">
               {seatIndex === 0 ? '😎' : isPartner ? '🤝' : '🤖'}
             </span>
 
             {/* Countdown Badge on Current Turn */}
             {isCurrent && (
-              <div className="absolute -bottom-1 -right-1 bg-amber-500 text-slate-950 font-black text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center border border-amber-200 shadow">
+              <div className="absolute -bottom-1 -right-1 bg-amber-500 text-slate-950 font-black text-[8px] sm:text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-amber-200 shadow">
                 {countdown}
               </div>
             )}
@@ -301,7 +299,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
           {/* Finished Rank Trophy Badge */}
           {isFinished && (
-            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full shadow-lg border border-amber-200 flex items-center gap-0.5 z-20">
+            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black text-[9px] px-1 py-0.2 rounded-full shadow-lg border border-amber-200 flex items-center gap-0.5 z-20">
               <span>{finishRank === 1 ? '🥇' : finishRank === 2 ? '🥈' : '🥉'}</span>
               <span>第{finishRank}名</span>
             </div>
@@ -309,22 +307,22 @@ export const PokerTable: React.FC<PokerTableProps> = ({
         </div>
 
         {/* Seat Label Pill & Active Thinking Tag */}
-        <div className="mt-1 flex flex-col items-center">
+        <div className="mt-0.5 flex flex-col items-center">
           <div
-            className={`px-2 py-0.5 rounded-full text-center shadow transition-colors ${
+            className={`px-1.5 py-0.2 rounded-full text-center shadow transition-colors ${
               isCurrent
                 ? 'bg-amber-500 text-slate-950 font-black border border-amber-200'
                 : 'bg-slate-950/90 border border-slate-700/80 text-white'
             }`}
           >
-            <div className="text-[10px] sm:text-[11px] font-black leading-none">
+            <div className="text-[9px] sm:text-[10px] font-black leading-none">
               {seatInfo.name}
             </div>
           </div>
 
           {/* Active Turn Floating Action Tag */}
           {isCurrent && (
-            <div className="mt-0.5 bg-amber-400 text-slate-950 font-black text-[9px] px-1.5 py-0.2 rounded-full shadow animate-bounce flex items-center gap-0.5">
+            <div className="mt-0.5 bg-amber-400 text-slate-950 font-black text-[8px] px-1 py-0.1 rounded-full shadow animate-bounce flex items-center gap-0.5">
               <span>👉</span>
               <span>{seatIndex === 0 ? '请出牌' : '思考中...'}</span>
             </div>
@@ -333,10 +331,10 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
         {/* Card Back Stack with Remaining Count Badge */}
         {!isFinished && seatIndex !== 0 && (
-          <div className="mt-1 flex items-center space-x-1 bg-emerald-950/80 border border-emerald-500/40 px-2 py-0.5 rounded-full shadow">
-            <span className="text-[10px] text-emerald-300 font-bold">剩余</span>
-            <span className="text-xs font-black text-amber-300 font-mono">{count}</span>
-            <span className="text-[10px] text-emerald-300">张</span>
+          <div className="mt-0.5 flex items-center space-x-0.5 bg-emerald-950/80 border border-emerald-500/40 px-1.5 py-0.2 rounded-full shadow">
+            <span className="text-[9px] text-emerald-300 font-bold">余</span>
+            <span className="text-[10px] font-black text-amber-300 font-mono">{count}</span>
+            <span className="text-[9px] text-emerald-300">张</span>
           </div>
         )}
       </div>
@@ -369,7 +367,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
                 levelRank={levelRank}
                 isSelected={selectedIds.has(c.id)}
                 onClick={() => onToggleCard(c.id)}
-                size={isLandscapeMode ? 'lg' : 'md'}
+                size="md"
               />
             </div>
           );
@@ -382,8 +380,8 @@ export const PokerTable: React.FC<PokerTableProps> = ({
     <div
       className={`relative select-none overflow-hidden font-sans transition-all duration-300 ${
         isLandscapeMode
-          ? 'fixed inset-0 z-50 w-full h-full rounded-none border-none shadow-none flex flex-col justify-between'
-          : 'w-full h-full flex flex-col justify-between rounded-3xl border-4 border-[#2b1f14] shadow-[0_20px_50px_rgba(0,0,0,0.85)]'
+          ? 'fixed inset-0 z-50 w-full h-full rounded-none border-none shadow-none flex flex-col justify-between p-1'
+          : 'w-full h-full flex flex-col justify-between rounded-3xl border-3 sm:border-4 border-[#2b1f14] shadow-[0_20px_50px_rgba(0,0,0,0.85)] p-1 sm:p-1.5'
       }`}
     >
       {/* Tournament Emerald Felt Background with Stadium Spotlight */}
@@ -417,65 +415,65 @@ export const PokerTable: React.FC<PokerTableProps> = ({
       </div>
 
       {/* Top Bar: Seats (North/Partner), Quick Emotes, Sound & God Mode */}
-      <div className="relative z-20 px-3 pt-2 sm:px-4 flex items-center justify-between">
+      <div className="relative z-20 px-2 pt-0.5 sm:px-4 flex items-center justify-between shrink-0">
         {/* Quick Voice & Emoji Buttons + Landscape Mode Switcher */}
-        <div className="flex items-center space-x-1.5 bg-slate-950/80 backdrop-blur-md p-1 rounded-2xl border border-emerald-500/30 shadow-lg">
+        <div className="flex items-center space-x-1 sm:space-x-1.5 bg-slate-950/80 backdrop-blur-md p-0.5 sm:p-1 rounded-2xl border border-emerald-500/30 shadow-lg">
           <button
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="p-1.5 bg-slate-900 hover:bg-slate-800 text-amber-400 rounded-xl transition-transform active:scale-95 shadow"
+            className="p-1 sm:p-1.5 bg-slate-900 hover:bg-slate-800 text-amber-400 rounded-xl transition-transform active:scale-95 shadow"
             title="快捷表情"
           >
-            <Smile className="w-4 h-4" />
+            <Smile className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
           <button
             onClick={() => setShowVoicePicker(!showVoicePicker)}
-            className="p-1.5 bg-slate-900 hover:bg-slate-800 text-sky-400 rounded-xl transition-transform active:scale-95 shadow"
+            className="p-1 sm:p-1.5 bg-slate-900 hover:bg-slate-800 text-sky-400 rounded-xl transition-transform active:scale-95 shadow"
             title="实战语音交流"
           >
-            <MessageCircle className="w-4 h-4" />
+            <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
           <button
             onClick={handleToggleSound}
-            className="p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl transition-transform active:scale-95 shadow"
+            className="p-1 sm:p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl transition-transform active:scale-95 shadow"
             title={isMuted ? '开启音效' : '静音'}
           >
-            {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
+            {isMuted ? <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-400" /> : <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
           </button>
 
           {/* Card Back Customizer Button */}
           <button
             onClick={() => setShowCardBackModal(true)}
-            className="p-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-xl transition-transform active:scale-95 shadow border border-amber-500/20"
+            className="p-1 sm:p-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 rounded-xl transition-transform active:scale-95 shadow border border-amber-500/20"
             title="定制专属牌背与Logo"
           >
-            <Palette className="w-4 h-4" />
+            <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
 
           {/* Landscape / Fullscreen Toggle Button (腾讯横屏模式) */}
           <button
             onClick={handleToggleLandscape}
-            className={`px-2 py-1 rounded-xl text-xs font-black flex items-center gap-1 transition-transform active:scale-95 shadow ${
+            className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-xl text-[10px] sm:text-xs font-black flex items-center gap-1 transition-transform active:scale-95 shadow ${
               isLandscapeMode
                 ? 'bg-amber-500 text-slate-950 shadow-amber-500/40'
                 : 'bg-slate-900 hover:bg-slate-800 text-amber-400 border border-amber-500/30'
             }`}
             title="腾讯16:9横屏全屏对战"
           >
-            {isLandscapeMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            {isLandscapeMode ? <Minimize2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <Maximize2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
             <span className="hidden sm:inline">{isLandscapeMode ? '退出横屏' : '腾讯横屏'}</span>
           </button>
 
           {onToggleGodMode && (
             <button
               onClick={onToggleGodMode}
-              className={`p-1.5 rounded-xl transition-transform active:scale-95 shadow ${
+              className={`p-1 sm:p-1.5 rounded-xl transition-transform active:scale-95 shadow ${
                 isGodMode
                   ? 'bg-amber-500 text-slate-950 font-black'
                   : 'bg-slate-900 hover:bg-slate-800 text-slate-400'
               }`}
               title="上帝视角 (全知透视)"
             >
-              {isGodMode ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              {isGodMode ? <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
             </button>
           )}
         </div>
@@ -484,7 +482,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
         <div className="flex flex-col items-center">
           {renderSeatAvatar(2)}
           {/* North Played Cards / Pass Status Zone */}
-          <div className="min-h-[45px] mt-1 flex items-center justify-center">
+          <div className="min-h-[26px] sm:min-h-[32px] mt-0.5 flex items-center justify-center">
             {renderSeatTrickAction(2)}
           </div>
           {isGodMode && hands[2] && (
@@ -497,27 +495,27 @@ export const PokerTable: React.FC<PokerTableProps> = ({
         </div>
 
         {/* Grade Indicator Pill (Top Right) */}
-        <div className="bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-2xl border border-amber-500/40 shadow-lg flex items-center space-x-2 text-xs">
+        <div className="bg-slate-950/80 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-2xl border border-amber-500/40 shadow-lg flex items-center space-x-1.5 text-[10px] sm:text-xs">
           <div className="flex items-center space-x-1">
-            <Crown className="w-3.5 h-3.5 text-amber-400" />
+            <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400" />
             <span className="text-white font-black">打【{levelRank}】</span>
           </div>
-          <span className="w-px h-3 bg-slate-700" />
-          <div className="flex items-center space-x-1 text-rose-400 font-bold text-[10px]">
+          <span className="w-px h-2.5 bg-slate-700" />
+          <div className="flex items-center space-x-0.5 text-rose-400 font-bold text-[9px] sm:text-[10px]">
             <span>♥{levelRank}</span>
-            <span className="text-[9px] text-amber-300">逢人配</span>
+            <span className="text-amber-300">逢人配</span>
           </div>
         </div>
       </div>
 
       {/* Center Arena: West Seat + West Drop Zone | Center Match Status Podium | East Drop Zone + East Seat */}
-      <div className="relative z-10 flex-1 flex items-center justify-between px-2 sm:px-6 min-h-0">
+      <div className="relative z-10 flex-1 flex items-center justify-between px-2 sm:px-4 min-h-0 my-0.5">
         {/* West Opponent (Seat 3) + West Dedicated Drop Zone to Right */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1.5 sm:space-x-2">
           <div className="flex flex-col items-center">
             {renderSeatAvatar(3)}
             {isGodMode && hands[3] && (
-              <div className="flex flex-col -space-y-6 mt-1 max-h-[120px] overflow-y-auto p-0.5 bg-black/40 rounded-lg">
+              <div className="flex flex-col -space-y-6 mt-0.5 max-h-[100px] overflow-y-auto p-0.5 bg-black/40 rounded-lg">
                 {hands[3].map((c) => (
                   <PlayingCard key={c.id} card={c} levelRank={levelRank} size="sm" compact />
                 ))}
@@ -525,18 +523,18 @@ export const PokerTable: React.FC<PokerTableProps> = ({
             )}
           </div>
           {/* West Played Cards / Pass Status Zone */}
-          <div className="min-w-[70px] flex items-center justify-center">
+          <div className="min-w-[60px] sm:min-w-[70px] flex items-center justify-center">
             {renderSeatTrickAction(3)}
           </div>
         </div>
 
         {/* Center Match Status Podium: Tells EXACTLY Who is playing & Target combo */}
-        <div className="flex flex-col items-center justify-center p-2 rounded-2xl bg-black/40 border border-emerald-500/30 backdrop-blur-md shadow-2xl mx-auto max-w-sm text-center">
+        <div className="flex flex-col items-center justify-center py-0.5 px-2 rounded-2xl bg-black/40 border border-emerald-500/30 backdrop-blur-md shadow-xl mx-auto max-w-xs text-center">
           {/* Active Turn Announcement */}
-          <div className="flex items-center space-x-1 text-xs font-black">
+          <div className="flex items-center space-x-1 text-[10px] sm:text-xs font-black">
             <span className="text-amber-400">⚡ 当前轮到：</span>
             <span
-              className={`px-2 py-0.5 rounded-lg ${
+              className={`px-1.5 py-0.2 rounded-lg ${
                 isMyTurn ? 'bg-amber-500 text-slate-950 font-black' : 'text-emerald-300 font-extrabold'
               }`}
             >
@@ -546,29 +544,29 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
           {/* Target Combo to Beat */}
           {currentCombo ? (
-            <div className="mt-1 flex items-center space-x-1 text-[11px] bg-amber-500/20 text-amber-200 px-2.5 py-0.5 rounded-full border border-amber-500/40 animate-pulse">
-              <Sparkles className="w-3 h-3 text-amber-400" />
+            <div className="mt-0.5 flex items-center space-x-1 text-[9px] sm:text-[10px] bg-amber-500/20 text-amber-200 px-2 py-0.2 rounded-full border border-amber-500/40 animate-pulse">
+              <Sparkles className="w-2.5 h-2.5 text-amber-400" />
               <span>需压过：</span>
               <span className="font-black text-amber-300">{describeCombo(currentCombo)}</span>
               {currentCombo.isBomb && <span className="text-rose-400 font-black">🔥 炸弹</span>}
             </div>
           ) : (
-            <div className="mt-1 text-[10px] text-emerald-400 font-bold">
+            <div className="mt-0.5 text-[9px] text-emerald-400 font-bold">
               ✨ 新一墩领牌 · 自由首发任意牌型
             </div>
           )}
         </div>
 
         {/* East Dedicated Drop Zone to Left + East Opponent (Seat 1) */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1.5 sm:space-x-2">
           {/* East Played Cards / Pass Status Zone */}
-          <div className="min-w-[70px] flex items-center justify-center">
+          <div className="min-w-[60px] sm:min-w-[70px] flex items-center justify-center">
             {renderSeatTrickAction(1)}
           </div>
           <div className="flex flex-col items-center">
             {renderSeatAvatar(1)}
             {isGodMode && hands[1] && (
-              <div className="flex flex-col -space-y-6 mt-1 max-h-[120px] overflow-y-auto p-0.5 bg-black/40 rounded-lg">
+              <div className="flex flex-col -space-y-6 mt-0.5 max-h-[100px] overflow-y-auto p-0.5 bg-black/40 rounded-lg">
                 {hands[1].map((c) => (
                   <PlayingCard key={c.id} card={c} levelRank={levelRank} size="sm" compact />
                 ))}
@@ -578,22 +576,22 @@ export const PokerTable: React.FC<PokerTableProps> = ({
         </div>
       </div>
 
-      {/* Bottom Area: South (Me) Played Cards Zone + 3D Action Controls + User Cards */}
-      <div className="relative z-20 px-2 pb-2 sm:px-4 flex flex-col items-center space-y-1.5 w-full">
+      {/* Bottom Area: South (Me) Played Cards Zone + 3D Action Controls + User Hand Cards (Always Guaranteed Visible) */}
+      <div className="relative z-20 px-1 pb-1 sm:px-3 flex flex-col items-center space-y-1 w-full shrink-0">
         {/* South (Me) Played Cards / Pass Status Zone (Directly Above Action Bar) */}
-        <div className="min-h-[40px] flex items-center justify-center">
+        <div className="min-h-[26px] sm:min-h-[32px] flex items-center justify-center">
           {renderSeatTrickAction(0)}
         </div>
 
         {/* iOS 3D Tactile Action Bar */}
-        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 bg-slate-950/85 backdrop-blur-xl p-1.5 rounded-2xl border border-amber-500/40 shadow-2xl">
+        <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2 bg-slate-950/85 backdrop-blur-xl p-1 rounded-2xl border border-amber-500/40 shadow-xl">
           {/* 3-Option Grouping Mode Switcher (1.由大到小 / 2.教练组牌 / 3.玩家组牌) */}
-          <div className="flex items-center bg-slate-900 p-0.5 rounded-xl border border-slate-800 text-[11px] font-black">
+          <div className="flex items-center bg-slate-900 p-0.5 rounded-xl border border-slate-800 text-[10px] sm:text-[11px] font-black">
             <button
               onClick={() => handleSelectGroupingMode('natural')}
-              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
+              className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg transition-all flex items-center gap-0.5 sm:gap-1 ${
                 groupingMode === 'natural'
-                  ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                  ? 'bg-amber-500 text-slate-950 shadow font-black'
                   : 'text-slate-400 hover:text-white'
               }`}
               title="按点数由大到小依次连续排列"
@@ -603,9 +601,9 @@ export const PokerTable: React.FC<PokerTableProps> = ({
             </button>
             <button
               onClick={() => handleSelectGroupingMode('coach')}
-              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
+              className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg transition-all flex items-center gap-0.5 sm:gap-1 ${
                 groupingMode === 'coach'
-                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 shadow-md font-black'
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 shadow font-black'
                   : 'text-slate-400 hover:text-white'
               }`}
               title="AI教练根据掼蛋最佳策略自动成套理牌"
@@ -615,9 +613,9 @@ export const PokerTable: React.FC<PokerTableProps> = ({
             </button>
             <button
               onClick={() => handleSelectGroupingMode('manual')}
-              className={`px-2 py-1 rounded-lg transition-all flex items-center gap-1 ${
+              className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg transition-all flex items-center gap-0.5 sm:gap-1 ${
                 groupingMode === 'manual'
-                  ? 'bg-gradient-to-r from-sky-400 to-sky-500 text-slate-950 shadow-md font-black'
+                  ? 'bg-gradient-to-r from-sky-400 to-sky-500 text-slate-950 shadow font-black'
                   : 'text-slate-400 hover:text-white'
               }`}
               title="玩家自由选择任意手牌编组管理"
@@ -633,24 +631,24 @@ export const PokerTable: React.FC<PokerTableProps> = ({
               <button
                 onClick={handleCreateCustomGroup}
                 disabled={selectedIds.size === 0}
-                className={`px-2.5 py-1 rounded-lg text-xs font-black flex items-center space-x-1 transition-all ${
+                className={`px-2 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-black flex items-center space-x-0.5 transition-all ${
                   selectedIds.size > 0
                     ? 'bg-sky-500 hover:bg-sky-400 text-slate-950 shadow active:scale-95'
                     : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                 }`}
                 title="将当前选中的牌编入一个新分组"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3 h-3" />
                 <span>编入组 ({selectedIds.size})</span>
               </button>
 
               {customGroups.length > 0 && (
                 <button
                   onClick={handleResetCustomGroups}
-                  className="px-2 py-1 rounded-lg text-xs font-bold text-rose-300 hover:text-rose-200 bg-rose-950/60 border border-rose-500/30 flex items-center space-x-0.5 transition-all"
+                  className="px-1.5 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-bold text-rose-300 hover:text-rose-200 bg-rose-950/60 border border-rose-500/30 flex items-center space-x-0.5 transition-all"
                   title="拆解所有自定义分组，还原为散牌"
                 >
-                  <RotateCcw className="w-3 h-3" />
+                  <RotateCcw className="w-2.5 h-2.5" />
                   <span>还原</span>
                 </button>
               )}
@@ -661,13 +659,13 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           <button
             onClick={onAutoHint}
             disabled={!isMyTurn}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center space-x-1 transition-all shadow-md ${
+            className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-black flex items-center space-x-1 transition-all shadow ${
               isMyTurn
                 ? 'bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-400 text-white active:scale-95'
                 : 'bg-slate-800/60 text-slate-500 cursor-not-allowed'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             <span>提示</span>
           </button>
 
@@ -675,13 +673,13 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           <button
             onClick={onPass}
             disabled={!isMyTurn || !currentCombo}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center space-x-1 transition-all shadow-md ${
+            className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-black flex items-center space-x-1 transition-all shadow ${
               isMyTurn && currentCombo
                 ? 'bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 text-white active:scale-95'
                 : 'bg-slate-800/60 text-slate-500 cursor-not-allowed'
             }`}
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             <span>不要 / 过</span>
           </button>
 
@@ -689,13 +687,13 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           <button
             onClick={onPlay}
             disabled={!isMyTurn || selectedIds.size === 0}
-            className={`px-5 py-2 rounded-xl text-sm font-black flex items-center space-x-1.5 transition-all duration-150 ${
+            className={`px-3.5 py-1 sm:px-5 sm:py-1.5 rounded-xl text-xs sm:text-sm font-black flex items-center space-x-1 transition-all duration-150 ${
               isMyTurn && selectedIds.size > 0
-                ? 'bg-gradient-to-b from-amber-300 via-amber-400 to-amber-600 hover:from-amber-200 hover:to-amber-500 text-slate-950 shadow-[0_8px_20px_rgba(245,158,11,0.5)] active:scale-95 active:translate-y-0.5 ring-2 ring-amber-200 border-t border-amber-100'
+                ? 'bg-gradient-to-b from-amber-300 via-amber-400 to-amber-600 hover:from-amber-200 hover:to-amber-500 text-slate-950 shadow-[0_6px_16px_rgba(245,158,11,0.5)] active:scale-95 active:translate-y-0.5 ring-2 ring-amber-200 border-t border-amber-100'
                 : 'bg-slate-800/80 text-slate-500 cursor-not-allowed shadow-none'
             }`}
           >
-            <Zap className="w-4 h-4 fill-current" />
+            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />
             <span>出牌 ({selectedIds.size})</span>
           </button>
 
@@ -703,25 +701,25 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           {selectedIds.size > 0 && (
             <button
               onClick={onClearSelection}
-              className="text-slate-400 hover:text-white text-[11px] font-bold underline px-1"
+              className="text-slate-400 hover:text-white text-[10px] font-bold underline px-1"
             >
               取消
             </button>
           )}
         </div>
 
-        {/* User Hand Cards View: Zero-Scroll Adaptive Layout */}
-        <div className="w-full flex justify-center items-end min-h-[95px] sm:min-h-[115px] px-1 overflow-visible">
+        {/* User Hand Cards View: Zero-Scroll Adaptive Layout (Always 100% in Viewport) */}
+        <div className="w-full flex justify-center items-end min-h-[68px] sm:min-h-[85px] px-1 overflow-visible shrink-0">
           {/* Mode 1: 原始由大到小连续排列 (Natural Rank Sort with Dynamic Overlap - No Horizontal Scrollbar!) */}
           {groupingMode === 'natural' && renderAdaptiveCards(naturalSortedHand)}
 
           {/* Mode 2: 教练建议组牌 (AI Optimizer Clustered Groups - Responsive Wrap) */}
           {groupingMode === 'coach' && (
-            <div className="flex flex-wrap justify-center items-end gap-1.5 sm:gap-2.5 max-w-4xl">
+            <div className="flex flex-wrap justify-center items-end gap-1 sm:gap-2 max-w-4xl">
               {bestGroups.map((group, gIdx) => (
                 <div
                   key={gIdx}
-                  className="flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-black/25 hover:bg-black/35 rounded-2xl transition-colors border border-amber-500/20 shrink-0"
+                  className="flex items-end -space-x-4 sm:-space-x-5 p-0.5 bg-black/25 hover:bg-black/35 rounded-2xl transition-colors border border-amber-500/20 shrink-0"
                 >
                   {group.cards.map((c) => (
                     <PlayingCard
@@ -730,7 +728,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
                       levelRank={levelRank}
                       isSelected={selectedIds.has(c.id)}
                       onClick={() => onToggleCard(c.id)}
-                      size={isLandscapeMode ? 'lg' : 'md'}
+                      size="md"
                     />
                   ))}
                 </div>
@@ -740,12 +738,12 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
           {/* Mode 3: 玩家自由手动组牌 (Player Custom Groups + Ungrouped Cards) */}
           {groupingMode === 'manual' && (
-            <div className="flex flex-wrap justify-center items-end gap-1.5 sm:gap-2.5 max-w-4xl">
+            <div className="flex flex-wrap justify-center items-end gap-1 sm:gap-2 max-w-4xl">
               {/* Render player's created custom groups */}
               {customGroups.map((group, gIdx) => (
                 <div
                   key={gIdx}
-                  className="relative flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-sky-950/40 hover:bg-sky-950/60 rounded-2xl transition-colors border border-sky-500/30 group shrink-0"
+                  className="relative flex items-end -space-x-4 sm:-space-x-5 p-0.5 bg-sky-950/40 hover:bg-sky-950/60 rounded-2xl transition-colors border border-sky-500/30 group shrink-0"
                 >
                   {/* Dissolve Group Pill */}
                   <button
@@ -753,11 +751,11 @@ export const PokerTable: React.FC<PokerTableProps> = ({
                       e.stopPropagation();
                       handleDissolveCustomGroup(gIdx);
                     }}
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 bg-sky-900 hover:bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full border border-sky-400 shadow z-30 transition-colors flex items-center gap-0.5"
+                    className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-sky-900 hover:bg-rose-600 text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.1 rounded-full border border-sky-400 shadow z-30 transition-colors flex items-center gap-0.5"
                     title="拆解该组"
                   >
                     <span>组{gIdx + 1}</span>
-                    <X className="w-2.5 h-2.5" />
+                    <X className="w-2 h-2" />
                   </button>
 
                   {group.map((c) => (
@@ -767,7 +765,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
                       levelRank={levelRank}
                       isSelected={selectedIds.has(c.id)}
                       onClick={() => onToggleCard(c.id)}
-                      size={isLandscapeMode ? 'lg' : 'md'}
+                      size="md"
                     />
                   ))}
                 </div>
@@ -775,9 +773,9 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
               {/* Ungrouped / Remaining Cards */}
               {ungroupedCards.length > 0 && (
-                <div className="relative flex items-end -space-x-4 sm:-space-x-5.5 p-1 bg-black/20 rounded-2xl border border-white/10 shrink-0">
+                <div className="relative flex items-end -space-x-4 sm:-space-x-5 p-0.5 bg-black/20 rounded-2xl border border-white/10 shrink-0">
                   {customGroups.length > 0 && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-400 text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-slate-600 shadow z-30 pointer-events-none">
+                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-400 text-[8px] font-bold px-1.5 py-0.1 rounded-full border border-slate-600 shadow z-30 pointer-events-none">
                       散牌
                     </div>
                   )}
@@ -788,7 +786,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
                       levelRank={levelRank}
                       isSelected={selectedIds.has(c.id)}
                       onClick={() => onToggleCard(c.id)}
-                      size={isLandscapeMode ? 'lg' : 'md'}
+                      size="md"
                     />
                   ))}
                 </div>
@@ -800,19 +798,19 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
       {/* Floating Emoji Picker Modal */}
       {showEmojiPicker && (
-        <div className="absolute top-12 left-4 z-50 bg-slate-900/95 backdrop-blur-xl border border-amber-500/40 rounded-2xl p-2.5 shadow-2xl animate-fade-in space-y-1.5 max-w-xs text-left">
+        <div className="absolute top-10 left-3 z-50 bg-slate-900/95 backdrop-blur-xl border border-amber-500/40 rounded-2xl p-2 shadow-2xl animate-fade-in space-y-1 max-w-xs text-left">
           <div className="flex items-center justify-between text-xs font-black text-amber-300">
             <span>快捷表情</span>
             <button onClick={() => setShowEmojiPicker(false)} className="text-slate-400 hover:text-white">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
-          <div className="grid grid-cols-4 gap-1.5">
+          <div className="grid grid-cols-4 gap-1">
             {POPULAR_EMOJIS.map((item, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSelectEmoji(item)}
-                className="bg-slate-800 hover:bg-slate-700 p-2 rounded-xl text-xl flex items-center justify-center transition-transform active:scale-90"
+                className="bg-slate-800 hover:bg-slate-700 p-1.5 rounded-xl text-lg flex items-center justify-center transition-transform active:scale-90"
               >
                 {item.emoji}
               </button>
@@ -823,19 +821,19 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
       {/* Floating Voice Phrase Picker Modal */}
       {showVoicePicker && (
-        <div className="absolute top-12 left-4 z-50 bg-slate-900/95 backdrop-blur-xl border border-sky-500/40 rounded-2xl p-2.5 shadow-2xl animate-fade-in space-y-1.5 max-w-xs text-left">
+        <div className="absolute top-10 left-3 z-50 bg-slate-900/95 backdrop-blur-xl border border-sky-500/40 rounded-2xl p-2 shadow-2xl animate-fade-in space-y-1 max-w-xs text-left">
           <div className="flex items-center justify-between text-xs font-black text-sky-300">
             <span>实战牌语与呼叫</span>
             <button onClick={() => setShowVoicePicker(false)} className="text-slate-400 hover:text-white">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
-          <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+          <div className="space-y-0.5 max-h-40 overflow-y-auto pr-1">
             {POPULAR_PHRASES.map((phrase) => (
               <button
                 key={phrase.id}
                 onClick={() => handleSelectPhrase(phrase)}
-                className="w-full text-left text-xs bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-slate-200 hover:text-white font-bold transition-all"
+                className="w-full text-left text-[11px] bg-slate-800 hover:bg-slate-700 p-1 rounded-lg text-slate-200 hover:text-white font-bold transition-all"
               >
                 {phrase.text}
               </button>

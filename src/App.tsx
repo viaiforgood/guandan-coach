@@ -56,7 +56,7 @@ const AppContent: React.FC = () => {
   return (
     <div className="h-screen w-screen max-h-screen overflow-hidden bg-slate-950 text-slate-100 flex flex-col selection:bg-amber-500 selection:text-slate-950 font-sans">
       {/* Compact Top Navbar */}
-      <header className="shrink-0 h-12 sm:h-13 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 shadow-md z-40">
+      <header className="shrink-0 h-11 sm:h-12 landscape:h-8.5 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 shadow-md z-40">
         <div className="h-full max-w-7xl mx-auto px-2 sm:px-4 flex items-center justify-between">
           {/* Logo & Brand Header */}
           <div
