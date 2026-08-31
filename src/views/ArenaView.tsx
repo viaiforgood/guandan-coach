@@ -32,6 +32,8 @@ import {
   ChevronRight,
   Crown,
   Zap,
+  PanelRightClose,
+  PanelRightOpen,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -54,6 +56,17 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
   const [isAutoPlay, setIsAutoPlay] = useState<boolean>(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<'table' | 'coach' | 'tracker'>('table');
+  const [showSideHUD, setShowSideHUD] = useState<boolean>(() => {
+    const saved = localStorage.getItem('guandan_show_side_hud');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  const toggleSideHUD = () => {
+    const next = !showSideHUD;
+    setShowSideHUD(next);
+    localStorage.setItem('guandan_show_side_hud', next.toString());
+    Sound.playCardClick();
+  };
 
   const handleChangeBotSpeed = (speed: number) => {
     setBotSpeedMs(speed);
@@ -333,6 +346,29 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
                 大师
               </button>
             </div>
+
+            {/* Toggle Side Coach/Tracker HUD (Expert Full-Width Pure Table Mode) */}
+            <button
+              onClick={toggleSideHUD}
+              className={`hidden md:flex landscape:flex items-center space-x-1 px-2 py-0.5 rounded-xl text-[10px] font-black border transition-all shadow active:scale-95 ${
+                showSideHUD
+                  ? 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-700'
+                  : 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 border-amber-300 font-black ring-1 ring-amber-300'
+              }`}
+              title={showSideHUD ? '专家纯净模式：隐藏提示/记牌区，享受全宽超大牌桌' : '展开AI教练与记牌器提示'}
+            >
+              {showSideHUD ? (
+                <>
+                  <PanelRightClose className="w-3 h-3 text-slate-400" />
+                  <span>纯净大桌</span>
+                </>
+              ) : (
+                <>
+                  <PanelRightOpen className="w-3 h-3 text-slate-950" />
+                  <span>显示教练</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -517,23 +553,25 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
         </div>
       </div>
 
-      {/* Right Column: AI Coach & 50-Law Tracker (Always visible in Landscape & Desktop, 100% in one screen) */}
-      <div className="hidden landscape:flex md:flex w-64 sm:w-72 lg:w-80 xl:w-96 h-full flex-col gap-2 min-h-0 shrink-0">
-        {/* Top Box: AI Coach Live Guidance */}
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <CoachBubble
-            suggestion={coachSuggestion}
-            levelRank={levelRank}
-            onApplyPlay={handleApplyCoachPlay}
-            isMyTurn={isMyTurn}
-          />
-        </div>
+      {/* Right Column: AI Coach & 50-Law Tracker (Collapsible for Expert Pure Table Mode) */}
+      {showSideHUD && (
+        <div className="hidden landscape:flex md:flex w-64 sm:w-72 lg:w-80 xl:w-96 h-full flex-col gap-2 min-h-0 shrink-0 animate-fade-in">
+          {/* Top Box: AI Coach Live Guidance */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <CoachBubble
+              suggestion={coachSuggestion}
+              levelRank={levelRank}
+              onApplyPlay={handleApplyCoachPlay}
+              isMyTurn={isMyTurn}
+            />
+          </div>
 
-        {/* Bottom Box: 50-Law Tracker HUD */}
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <CardTrackerDrawer tracker={tracker} levelRank={levelRank} />
+          {/* Bottom Box: 50-Law Tracker HUD */}
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <CardTrackerDrawer tracker={tracker} levelRank={levelRank} />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Round End Modal */}
       {(phase === 'round_end' || phase === 'match_end') && (
