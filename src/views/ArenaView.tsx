@@ -47,10 +47,19 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
   const [showLevelPicker, setShowLevelPicker] = useState<boolean>(false);
   const [gameState, setGameState] = useState<GameState>(() => initMatch('2', '4p'));
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [botSpeedMs, setBotSpeedMs] = useState<number>(800);
+  const [botSpeedMs, setBotSpeedMs] = useState<number>(() => {
+    const saved = localStorage.getItem('guandan_bot_speed_ms');
+    return saved ? parseInt(saved, 10) : 1500;
+  });
   const [isAutoPlay, setIsAutoPlay] = useState<boolean>(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<'table' | 'coach' | 'tracker'>('table');
+
+  const handleChangeBotSpeed = (speed: number) => {
+    setBotSpeedMs(speed);
+    localStorage.setItem('guandan_bot_speed_ms', speed.toString());
+    Sound.playCardClick();
+  };
 
   const { currentTurn, hands, levelRank, phase, history, isGodMode, teamLevels } = gameState;
   const userHand = hands[0] || [];
@@ -416,31 +425,51 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onNavigateToReplay }) => {
 
             <span className="text-slate-700 mx-0.5">|</span>
 
-            {/* Speed Buttons */}
-            <span className="text-slate-500 font-bold hidden sm:inline">出牌速度:</span>
+            {/* Speed Buttons with Clear Timing & Pacing */}
+            <span className="text-slate-500 font-bold hidden sm:inline">出牌节奏:</span>
             <button
-              onClick={() => setBotSpeedMs(1500)}
-              className={`px-1.5 py-0.5 rounded font-bold ${
-                botSpeedMs === 1500 ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
+              onClick={() => handleChangeBotSpeed(2000)}
+              className={`px-1.5 py-0.5 rounded font-bold transition-all ${
+                botSpeedMs === 2000
+                  ? 'bg-amber-500 text-slate-950 font-black shadow'
+                  : 'text-slate-400 hover:text-white'
               }`}
+              title="2.0秒 慢速仔细看"
             >
-              1.5s
+              🐢 2.0s
             </button>
             <button
-              onClick={() => setBotSpeedMs(800)}
-              className={`px-1.5 py-0.5 rounded font-bold ${
-                botSpeedMs === 800 ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
+              onClick={() => handleChangeBotSpeed(1500)}
+              className={`px-1.5 py-0.5 rounded font-bold transition-all ${
+                botSpeedMs === 1500
+                  ? 'bg-amber-500 text-slate-950 font-black shadow'
+                  : 'text-slate-400 hover:text-white'
               }`}
+              title="1.5秒 舒适标准节奏（推荐）"
             >
-              0.8s
+              🚶 1.5s
             </button>
             <button
-              onClick={() => setBotSpeedMs(200)}
-              className={`px-1.5 py-0.5 rounded font-bold ${
-                botSpeedMs === 200 ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
+              onClick={() => handleChangeBotSpeed(800)}
+              className={`px-1.5 py-0.5 rounded font-bold transition-all ${
+                botSpeedMs === 800
+                  ? 'bg-amber-500 text-slate-950 font-black shadow'
+                  : 'text-slate-400 hover:text-white'
               }`}
+              title="0.8秒 快速"
             >
-              极速
+              🏃 0.8s
+            </button>
+            <button
+              onClick={() => handleChangeBotSpeed(300)}
+              className={`px-1.5 py-0.5 rounded font-bold transition-all ${
+                botSpeedMs === 300
+                  ? 'bg-amber-500 text-slate-950 font-black shadow'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="0.3秒 极速"
+            >
+              ⚡ 极速
             </button>
           </div>
 

@@ -225,17 +225,25 @@ export const ReplayView: React.FC<ReplayViewProps> = ({ initialRecord, onLaunchS
             ))}
           </div>
 
-          <div className="h-8 flex items-center justify-center">
+          <div className="min-h-[40px] flex items-center justify-center">
             {stepState.trickPlays[2] ? (
               stepState.trickPlays[2]?.action === 'pass' ? (
-                <span className="text-[10px] bg-slate-900/90 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700 font-bold">
-                  过牌
+                <span className="text-[11px] bg-rose-950/90 text-rose-300 px-2.5 py-0.5 rounded-full border border-rose-500/60 font-black shadow flex items-center gap-1">
+                  <span>🛑</span>
+                  <span>不要 / 过</span>
                 </span>
               ) : (
-                <div className="flex -space-x-5 drop-shadow-md">
-                  {stepState.trickPlays[2]?.cards?.map((card) => (
-                    <PlayingCard key={card.id} card={card} levelRank={record.levelRank} size="sm" />
-                  ))}
+                <div className="flex flex-col items-center space-y-0.5">
+                  {stepState.trickPlays[2]?.combo && (
+                    <span className="text-[9px] font-black px-1.5 py-0.2 rounded-full bg-black/80 text-amber-300 border border-amber-500/40 shadow">
+                      {describeCombo(stepState.trickPlays[2]!.combo!)}
+                    </span>
+                  )}
+                  <div className="flex -space-x-3.5 drop-shadow-md">
+                    {stepState.trickPlays[2]?.cards?.map((card) => (
+                      <PlayingCard key={card.id} card={card} levelRank={record.levelRank} size="sm" />
+                    ))}
+                  </div>
                 </div>
               )
             ) : null}
@@ -257,17 +265,25 @@ export const ReplayView: React.FC<ReplayViewProps> = ({ initialRecord, onLaunchS
               ))}
             </div>
 
-            <div className="h-8 flex items-center">
+            <div className="min-h-[40px] flex items-center">
               {stepState.trickPlays[3] ? (
                 stepState.trickPlays[3]?.action === 'pass' ? (
-                  <span className="text-[10px] bg-slate-900/90 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700 font-bold">
-                    过牌
+                  <span className="text-[11px] bg-rose-950/90 text-rose-300 px-2.5 py-0.5 rounded-full border border-rose-500/60 font-black shadow flex items-center gap-1">
+                    <span>🛑</span>
+                    <span>不要 / 过</span>
                   </span>
                 ) : (
-                  <div className="flex -space-x-5 drop-shadow-md">
-                    {stepState.trickPlays[3]?.cards?.map((card) => (
-                      <PlayingCard key={card.id} card={card} levelRank={record.levelRank} size="sm" />
-                    ))}
+                  <div className="flex flex-col items-start space-y-0.5">
+                    {stepState.trickPlays[3]?.combo && (
+                      <span className="text-[9px] font-black px-1.5 py-0.2 rounded-full bg-black/80 text-amber-300 border border-amber-500/40 shadow">
+                        {describeCombo(stepState.trickPlays[3]!.combo!)}
+                      </span>
+                    )}
+                    <div className="flex -space-x-3.5 drop-shadow-md">
+                      {stepState.trickPlays[3]?.cards?.map((card) => (
+                        <PlayingCard key={card.id} card={card} levelRank={record.levelRank} size="sm" />
+                      ))}
+                    </div>
                   </div>
                 )
               ) : null}
@@ -305,17 +321,25 @@ export const ReplayView: React.FC<ReplayViewProps> = ({ initialRecord, onLaunchS
               ))}
             </div>
 
-            <div className="h-8 flex items-center">
+            <div className="min-h-[40px] flex items-center">
               {stepState.trickPlays[1] ? (
                 stepState.trickPlays[1]?.action === 'pass' ? (
-                  <span className="text-[10px] bg-slate-900/90 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700 font-bold">
-                    过牌
+                  <span className="text-[11px] bg-rose-950/90 text-rose-300 px-2.5 py-0.5 rounded-full border border-rose-500/60 font-black shadow flex items-center gap-1">
+                    <span>🛑</span>
+                    <span>不要 / 过</span>
                   </span>
                 ) : (
-                  <div className="flex -space-x-5 drop-shadow-md">
-                    {stepState.trickPlays[1]?.cards?.map((card) => (
-                      <PlayingCard key={card.id} card={card} levelRank={record.levelRank} size="sm" />
-                    ))}
+                  <div className="flex flex-col items-end space-y-0.5">
+                    {stepState.trickPlays[1]?.combo && (
+                      <span className="text-[9px] font-black px-1.5 py-0.2 rounded-full bg-black/80 text-amber-300 border border-amber-500/40 shadow">
+                        {describeCombo(stepState.trickPlays[1]!.combo!)}
+                      </span>
+                    )}
+                    <div className="flex -space-x-3.5 drop-shadow-md">
+                      {stepState.trickPlays[1]?.cards?.map((card) => (
+                        <PlayingCard key={card.id} card={card} levelRank={record.levelRank} size="sm" />
+                      ))}
+                    </div>
                   </div>
                 )
               ) : null}
@@ -325,17 +349,25 @@ export const ReplayView: React.FC<ReplayViewProps> = ({ initialRecord, onLaunchS
 
         {/* South (User / Seat 0) */}
         <div className="shrink-0 flex flex-col items-center space-y-1">
-          <div className="h-8 flex items-center justify-center">
+          <div className="min-h-[40px] flex items-center justify-center">
             {stepState.trickPlays[0] ? (
               stepState.trickPlays[0]?.action === 'pass' ? (
-                <span className="text-[10px] bg-slate-900/90 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700 font-bold">
-                  过牌
+                <span className="text-[11px] bg-rose-950/90 text-rose-300 px-2.5 py-0.5 rounded-full border border-rose-500/60 font-black shadow flex items-center gap-1">
+                  <span>🛑</span>
+                  <span>不要 / 过</span>
                 </span>
               ) : (
-                <div className="flex -space-x-5 drop-shadow-xl">
-                  {stepState.trickPlays[0]?.cards?.map((card) => (
-                    <PlayingCard key={card.id} card={card} levelRank={record.levelRank} size="sm" />
-                  ))}
+                <div className="flex flex-col items-center space-y-0.5">
+                  {stepState.trickPlays[0]?.combo && (
+                    <span className="text-[9px] font-black px-1.5 py-0.2 rounded-full bg-black/80 text-amber-300 border border-amber-500/40 shadow">
+                      {describeCombo(stepState.trickPlays[0]!.combo!)}
+                    </span>
+                  )}
+                  <div className="flex -space-x-3.5 drop-shadow-xl">
+                    {stepState.trickPlays[0]?.cards?.map((card) => (
+                      <PlayingCard key={card.id} card={card} levelRank={record.levelRank} size="sm" />
+                    ))}
+                  </div>
                 </div>
               )
             ) : null}

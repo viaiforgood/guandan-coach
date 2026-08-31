@@ -22,10 +22,11 @@ import {
   ArrowDownWideNarrow,
   Plus,
   RotateCcw,
-  Smartphone,
   Maximize2,
   Minimize2,
   Palette,
+  Clock,
+  Flame,
 } from 'lucide-react';
 
 export type GroupingMode = 'natural' | 'coach' | 'manual';
@@ -150,19 +151,19 @@ export const PokerTable: React.FC<PokerTableProps> = ({
   };
 
   const seatNames4p: Record<number, { name: string; pos: string; role: string }> = {
-    0: { name: '我', pos: '南', role: '己方主攻' },
-    1: { name: '东家', pos: '东', role: '对方下家' },
-    2: { name: '搭档', pos: '北', role: '对门搭档' },
-    3: { name: '西家', pos: '西', role: '对方上家' },
+    0: { name: '我 (南)', pos: '南', role: '己方主攻' },
+    1: { name: '东家 (右家)', pos: '东', role: '对方下家' },
+    2: { name: '搭档 (北门)', pos: '北', role: '对门搭档' },
+    3: { name: '西家 (左家)', pos: '西', role: '对方上家' },
   };
 
   const seatNames6p: Record<number, { name: string; pos: string; role: string }> = {
-    0: { name: '我', pos: '南', role: '主队1' },
-    1: { name: '东1', pos: '东南', role: '客队1' },
-    2: { name: '搭档1', pos: '西北', role: '主队2' },
-    3: { name: '北家', pos: '正北', role: '客队2' },
-    4: { name: '搭档2', pos: '东北', role: '主队3' },
-    5: { name: '西1', pos: '西南', role: '客队3' },
+    0: { name: '我 (南)', pos: '南', role: '主队1' },
+    1: { name: '东1 (东南)', pos: '东南', role: '客队1' },
+    2: { name: '搭档1 (西北)', pos: '西北', role: '主队2' },
+    3: { name: '北家 (正北)', pos: '正北', role: '客队2' },
+    4: { name: '搭档2 (东北)', pos: '东北', role: '主队3' },
+    5: { name: '西1 (西南)', pos: '西南', role: '客队3' },
   };
 
   const seatNames = is6p ? seatNames6p : seatNames4p;
@@ -197,14 +198,44 @@ export const PokerTable: React.FC<PokerTableProps> = ({
     setShowVoicePicker(false);
   };
 
-  // Get active cards in the current trick
-  const currentTrickPlaysList = Object.values(trickPlays).filter(
-    (tp): tp is TrickPlay => tp !== null && tp !== undefined && tp.action === 'play'
-  );
-  const lastTrickPlay =
-    currentTrickPlaysList.length > 0 ? currentTrickPlaysList[currentTrickPlaysList.length - 1] : null;
+  // Render Per-Seat Dedicated Trick Plays & Persistent Action Status
+  const renderSeatTrickAction = (seatIndex: number, extraClasses = '') => {
+    const trick = trickPlays[seatIndex];
+    if (!trick) return null;
 
-  // Render Seat Avatar & Info HUD
+    if (trick.action === 'pass') {
+      return (
+        <div
+          className={`animate-fade-in bg-rose-950/90 text-rose-300 border-2 border-rose-500/80 font-black text-xs sm:text-sm px-3 py-1 rounded-2xl shadow-2xl flex items-center space-x-1 backdrop-blur-md ${extraClasses}`}
+        >
+          <span className="text-rose-400">🛑</span>
+          <span>不要 / 过</span>
+        </div>
+      );
+    }
+
+    if (trick.action === 'play' && trick.cards && trick.cards.length > 0) {
+      return (
+        <div className={`flex flex-col items-center animate-fade-in space-y-1 ${extraClasses}`}>
+          {trick.combo && (
+            <div className="text-[10px] sm:text-[11px] font-black px-2 py-0.5 rounded-full bg-black/85 text-amber-300 border border-amber-500/50 shadow-md flex items-center gap-1">
+              <span>{describeCombo(trick.combo)}</span>
+              {trick.combo.isBomb && <span className="text-rose-400 font-black animate-bounce">🔥 炸弹</span>}
+            </div>
+          )}
+          <div className="flex -space-x-3.5 sm:-space-x-4.5 drop-shadow-2xl">
+            {trick.cards.map((c) => (
+              <PlayingCard key={c.id} card={c} levelRank={levelRank} size="sm" disabled />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  // Render Seat Avatar & Info HUD with Active Turn Spotlight & Breathing Glow
   const renderSeatAvatar = (seatIndex: number, extraClasses = '') => {
     const isCurrent = currentTurn === seatIndex;
     const isFinished = finishedOrder.includes(seatIndex as PlayerSeat);
@@ -224,17 +255,22 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           </div>
         )}
 
-        {/* Circular Avatar with Active Turn Glow & SVG Countdown Ring */}
+        {/* Circular Avatar with Active Turn Spotlight & SVG Countdown Ring */}
         <div className="relative flex items-center justify-center">
+          {/* Active Player High-Visibility Spotlight Aura */}
           {isCurrent && (
-            <svg className="absolute -inset-1.5 w-14 h-14 sm:w-16 sm:h-16 animate-spin-slow">
+            <div className="absolute -inset-3 rounded-full bg-amber-400/25 blur-md animate-pulse pointer-events-none" />
+          )}
+
+          {isCurrent && (
+            <svg className="absolute -inset-1.5 w-14 h-14 sm:w-16 sm:h-16 animate-spin-slow z-10">
               <circle
                 cx="50%"
                 cy="50%"
                 r="44%"
                 fill="none"
                 stroke={countdown <= 5 ? '#f43f5e' : '#f59e0b'}
-                strokeWidth="3"
+                strokeWidth="3.5"
                 strokeDasharray="100"
                 strokeDashoffset={`${(countdown / 20) * 100}`}
                 className="transition-all duration-1000"
@@ -243,9 +279,9 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           )}
 
           <div
-            className={`w-11 h-11 sm:w-13 sm:h-13 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
+            className={`w-11 h-11 sm:w-13 sm:h-13 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 z-10 ${
               isCurrent
-                ? 'ring-4 ring-amber-400 bg-gradient-to-tr from-amber-500 via-amber-300 to-amber-600 scale-105 shadow-amber-500/50'
+                ? 'ring-4 ring-amber-400 bg-gradient-to-tr from-amber-500 via-amber-300 to-amber-600 scale-110 shadow-[0_0_25px_rgba(245,158,11,0.8)]'
                 : isPartner
                 ? 'ring-2 ring-emerald-400/80 bg-gradient-to-tr from-emerald-800 to-emerald-950'
                 : 'ring-2 ring-slate-600 bg-gradient-to-tr from-slate-800 to-slate-950'
@@ -265,21 +301,34 @@ export const PokerTable: React.FC<PokerTableProps> = ({
 
           {/* Finished Rank Trophy Badge */}
           {isFinished && (
-            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full shadow-lg border border-amber-200 flex items-center gap-0.5">
+            <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black text-[10px] px-1.5 py-0.5 rounded-full shadow-lg border border-amber-200 flex items-center gap-0.5 z-20">
               <span>{finishRank === 1 ? '🥇' : finishRank === 2 ? '🥈' : '🥉'}</span>
               <span>第{finishRank}名</span>
             </div>
           )}
         </div>
 
-        {/* Seat Label Pill */}
-        <div className="mt-1 bg-slate-950/90 border border-slate-700/80 px-2 py-0.5 rounded-full text-center shadow">
-          <div className="text-[11px] font-black text-white leading-none">
-            {seatInfo.name}
+        {/* Seat Label Pill & Active Thinking Tag */}
+        <div className="mt-1 flex flex-col items-center">
+          <div
+            className={`px-2 py-0.5 rounded-full text-center shadow transition-colors ${
+              isCurrent
+                ? 'bg-amber-500 text-slate-950 font-black border border-amber-200'
+                : 'bg-slate-950/90 border border-slate-700/80 text-white'
+            }`}
+          >
+            <div className="text-[10px] sm:text-[11px] font-black leading-none">
+              {seatInfo.name}
+            </div>
           </div>
-          <div className="text-[8px] text-amber-400/90 font-bold leading-none mt-0.5">
-            {seatInfo.role}
-          </div>
+
+          {/* Active Turn Floating Action Tag */}
+          {isCurrent && (
+            <div className="mt-0.5 bg-amber-400 text-slate-950 font-black text-[9px] px-1.5 py-0.2 rounded-full shadow animate-bounce flex items-center gap-0.5">
+              <span>👉</span>
+              <span>{seatIndex === 0 ? '请出牌' : '思考中...'}</span>
+            </div>
+          )}
         </div>
 
         {/* Card Back Stack with Remaining Count Badge */}
@@ -353,10 +402,10 @@ export const PokerTable: React.FC<PokerTableProps> = ({
             backgroundImage: `radial-gradient(#ffffff 1px, transparent 1px)`,
             backgroundSize: '24px 24px',
           }}
-        ></div>
+        />
 
         {/* Center Golden Compass Watermark & Stadium Ring */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-15">
+        <div className="absolute inset-0 flex items-center justify-center opacity-10">
           <div className="w-64 h-64 sm:w-88 sm:h-88 rounded-full border-2 border-amber-300 flex items-center justify-center">
             <div className="w-48 h-48 sm:w-64 sm:h-64 rounded-full border border-dashed border-amber-300 flex items-center justify-center">
               <span className="text-5xl sm:text-7xl font-black text-amber-200 tracking-widest">
@@ -431,11 +480,15 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           )}
         </div>
 
-        {/* Partner Seat (North Seat 2) */}
+        {/* North Partner Seat (Seat 2) with Dedicated Drop Zone Below */}
         <div className="flex flex-col items-center">
           {renderSeatAvatar(2)}
+          {/* North Played Cards / Pass Status Zone */}
+          <div className="min-h-[45px] mt-1 flex items-center justify-center">
+            {renderSeatTrickAction(2)}
+          </div>
           {isGodMode && hands[2] && (
-            <div className="flex -space-x-4 mt-1 overflow-x-auto max-w-[200px] p-0.5 bg-black/40 rounded-lg">
+            <div className="flex -space-x-4 mt-0.5 overflow-x-auto max-w-[200px] p-0.5 bg-black/40 rounded-lg">
               {hands[2].map((c) => (
                 <PlayingCard key={c.id} card={c} levelRank={levelRank} size="sm" compact />
               ))}
@@ -449,7 +502,7 @@ export const PokerTable: React.FC<PokerTableProps> = ({
             <Crown className="w-3.5 h-3.5 text-amber-400" />
             <span className="text-white font-black">打【{levelRank}】</span>
           </div>
-          <span className="w-px h-3 bg-slate-700"></span>
+          <span className="w-px h-3 bg-slate-700" />
           <div className="flex items-center space-x-1 text-rose-400 font-bold text-[10px]">
             <span>♥{levelRank}</span>
             <span className="text-[9px] text-amber-300">逢人配</span>
@@ -457,72 +510,81 @@ export const PokerTable: React.FC<PokerTableProps> = ({
         </div>
       </div>
 
-      {/* Center Arena: West Seat, Trick Play Zone, East Seat */}
+      {/* Center Arena: West Seat + West Drop Zone | Center Match Status Podium | East Drop Zone + East Seat */}
       <div className="relative z-10 flex-1 flex items-center justify-between px-2 sm:px-6 min-h-0">
-        {/* West Opponent (Seat 3) */}
-        <div className="flex flex-col items-center">
-          {renderSeatAvatar(3)}
-          {isGodMode && hands[3] && (
-            <div className="flex flex-col -space-y-6 mt-1 max-h-[140px] overflow-y-auto p-0.5 bg-black/40 rounded-lg">
-              {hands[3].map((c) => (
-                <PlayingCard key={c.id} card={c} levelRank={levelRank} size="sm" compact />
-              ))}
+        {/* West Opponent (Seat 3) + West Dedicated Drop Zone to Right */}
+        <div className="flex items-center space-x-2">
+          <div className="flex flex-col items-center">
+            {renderSeatAvatar(3)}
+            {isGodMode && hands[3] && (
+              <div className="flex flex-col -space-y-6 mt-1 max-h-[120px] overflow-y-auto p-0.5 bg-black/40 rounded-lg">
+                {hands[3].map((c) => (
+                  <PlayingCard key={c.id} card={c} levelRank={levelRank} size="sm" compact />
+                ))}
+              </div>
+            )}
+          </div>
+          {/* West Played Cards / Pass Status Zone */}
+          <div className="min-w-[70px] flex items-center justify-center">
+            {renderSeatTrickAction(3)}
+          </div>
+        </div>
+
+        {/* Center Match Status Podium: Tells EXACTLY Who is playing & Target combo */}
+        <div className="flex flex-col items-center justify-center p-2 rounded-2xl bg-black/40 border border-emerald-500/30 backdrop-blur-md shadow-2xl mx-auto max-w-sm text-center">
+          {/* Active Turn Announcement */}
+          <div className="flex items-center space-x-1 text-xs font-black">
+            <span className="text-amber-400">⚡ 当前轮到：</span>
+            <span
+              className={`px-2 py-0.5 rounded-lg ${
+                isMyTurn ? 'bg-amber-500 text-slate-950 font-black' : 'text-emerald-300 font-extrabold'
+              }`}
+            >
+              {seatNames[currentTurn]?.name || `Seat ${currentTurn}`}
+            </span>
+          </div>
+
+          {/* Target Combo to Beat */}
+          {currentCombo ? (
+            <div className="mt-1 flex items-center space-x-1 text-[11px] bg-amber-500/20 text-amber-200 px-2.5 py-0.5 rounded-full border border-amber-500/40 animate-pulse">
+              <Sparkles className="w-3 h-3 text-amber-400" />
+              <span>需压过：</span>
+              <span className="font-black text-amber-300">{describeCombo(currentCombo)}</span>
+              {currentCombo.isBomb && <span className="text-rose-400 font-black">🔥 炸弹</span>}
+            </div>
+          ) : (
+            <div className="mt-1 text-[10px] text-emerald-400 font-bold">
+              ✨ 新一墩领牌 · 自由首发任意牌型
             </div>
           )}
         </div>
 
-        {/* Center Trick Plays & Combo Announcements */}
-        <div className="flex-1 flex flex-col items-center justify-center max-w-lg mx-2 min-h-0">
-          {/* Active Combo Tag */}
-          {currentCombo && (
-            <div className="mb-2 bg-gradient-to-r from-amber-500/30 via-rose-500/30 to-amber-500/30 backdrop-blur-md px-3 py-1 rounded-full border border-amber-400/50 shadow-xl flex items-center space-x-1.5 animate-pulse">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-xs font-black text-amber-200">
-                {describeCombo(currentCombo)}
-              </span>
-              {currentCombo.isBomb && (
-                <span className="bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider animate-bounce">
-                  🔥 炸弹
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Cards on Table Drop Zone */}
-          <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 min-h-[90px] p-2 bg-black/25 rounded-2xl border border-white/5 shadow-inner">
-            {lastTrickPlay && lastTrickPlay.cards && lastTrickPlay.cards.length > 0 ? (
-              lastTrickPlay.cards.map((c) => (
-                <PlayingCard
-                  key={c.id}
-                  card={c}
-                  levelRank={levelRank}
-                  size={isLandscapeMode ? 'lg' : 'md'}
-                  disabled
-                />
-              ))
-            ) : (
-              <div className="text-emerald-300/40 text-xs font-bold flex items-center gap-1.5">
-                <span>等待出牌中...</span>
+        {/* East Dedicated Drop Zone to Left + East Opponent (Seat 1) */}
+        <div className="flex items-center space-x-2">
+          {/* East Played Cards / Pass Status Zone */}
+          <div className="min-w-[70px] flex items-center justify-center">
+            {renderSeatTrickAction(1)}
+          </div>
+          <div className="flex flex-col items-center">
+            {renderSeatAvatar(1)}
+            {isGodMode && hands[1] && (
+              <div className="flex flex-col -space-y-6 mt-1 max-h-[120px] overflow-y-auto p-0.5 bg-black/40 rounded-lg">
+                {hands[1].map((c) => (
+                  <PlayingCard key={c.id} card={c} levelRank={levelRank} size="sm" compact />
+                ))}
               </div>
             )}
           </div>
         </div>
-
-        {/* East Opponent (Seat 1) */}
-        <div className="flex flex-col items-center">
-          {renderSeatAvatar(1)}
-          {isGodMode && hands[1] && (
-            <div className="flex flex-col -space-y-6 mt-1 max-h-[140px] overflow-y-auto p-0.5 bg-black/40 rounded-lg">
-              {hands[1].map((c) => (
-                <PlayingCard key={c.id} card={c} levelRank={levelRank} size="sm" compact />
-              ))}
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* Bottom Area: Tactile 3D Action Controls & User Cards */}
+      {/* Bottom Area: South (Me) Played Cards Zone + 3D Action Controls + User Cards */}
       <div className="relative z-20 px-2 pb-2 sm:px-4 flex flex-col items-center space-y-1.5 w-full">
+        {/* South (Me) Played Cards / Pass Status Zone (Directly Above Action Bar) */}
+        <div className="min-h-[40px] flex items-center justify-center">
+          {renderSeatTrickAction(0)}
+        </div>
+
         {/* iOS 3D Tactile Action Bar */}
         <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 bg-slate-950/85 backdrop-blur-xl p-1.5 rounded-2xl border border-amber-500/40 shadow-2xl">
           {/* 3-Option Grouping Mode Switcher (1.由大到小 / 2.教练组牌 / 3.玩家组牌) */}
